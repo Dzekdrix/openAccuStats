@@ -8,6 +8,8 @@ Ajoutez vos changements sous **[Unreleased]** au fil du développement ;
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-11
+
 - Nouveau : indicateur « charge menée jusqu'au bout » dans l'historique
   (statut FULL ou chute du courant en fin de charge).
 - Correction : les charges faites écran éteint n'étaient presque pas mesurées

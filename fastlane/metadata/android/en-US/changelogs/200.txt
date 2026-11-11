@@ -1,0 +1,1 @@
+More reliable measurement: charges with the screen off are measured, the measurement is saved when monitoring stops, current is shown when not charging. New full-charge indicator. Offer to exempt the app from battery optimization.

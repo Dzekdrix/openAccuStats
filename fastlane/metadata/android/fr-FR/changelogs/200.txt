@@ -1,0 +1,1 @@
+Mesure fiabilisée : les charges écran éteint sont mesurées, la mesure est enregistrée à l'arrêt du suivi, le courant s'affiche hors charge. Nouvel indicateur de charge menée jusqu'au bout. Proposition d'exempter l'app de l'optimisation de batterie.
