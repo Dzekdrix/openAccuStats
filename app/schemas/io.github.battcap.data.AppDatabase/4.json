@@ -1,0 +1,113 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 4,
+    "identityHash": "c8dad42cdc95ce93bc40d39654b34e61",
+    "entities": [
+      {
+        "tableName": "charge_records",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `endedAtEpochMs` INTEGER NOT NULL, `startLevel` INTEGER NOT NULL, `endLevel` INTEGER NOT NULL, `bestMah` REAL NOT NULL, `coulombMah` REAL, `chargeCounterMah` REAL, `energyWh` REAL, `durationS` REAL NOT NULL, `maxTempC` REAL NOT NULL, `plugged` INTEGER NOT NULL, `confidence` TEXT NOT NULL, `reachedFull` INTEGER NOT NULL DEFAULT 0, `startedAtEpochMs` INTEGER, `isDischarge` INTEGER NOT NULL DEFAULT 0)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "endedAtEpochMs",
+            "columnName": "endedAtEpochMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "startLevel",
+            "columnName": "startLevel",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "endLevel",
+            "columnName": "endLevel",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "bestMah",
+            "columnName": "bestMah",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "coulombMah",
+            "columnName": "coulombMah",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "chargeCounterMah",
+            "columnName": "chargeCounterMah",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "energyWh",
+            "columnName": "energyWh",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "durationS",
+            "columnName": "durationS",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "maxTempC",
+            "columnName": "maxTempC",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "plugged",
+            "columnName": "plugged",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "confidence",
+            "columnName": "confidence",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reachedFull",
+            "columnName": "reachedFull",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "startedAtEpochMs",
+            "columnName": "startedAtEpochMs",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "isDischarge",
+            "columnName": "isDischarge",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        }
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'c8dad42cdc95ce93bc40d39654b34e61')"
+    ]
+  }
+}
