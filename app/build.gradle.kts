@@ -22,8 +22,8 @@ android {
         // robot de mise à jour de F-Droid (checkupdates) les lit dans ce fichier.
         // Règle : versionCode = MAJOR * 10000 + MINOR * 100 + PATCH
         // -------------------------------------------------------------------
-        versionCode = 200
-        versionName = "0.2.0"
+        versionCode = 300
+        versionName = "0.3.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 

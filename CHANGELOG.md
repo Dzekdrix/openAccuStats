@@ -8,6 +8,8 @@ Ajoutez vos changements sous **[Unreleased]** au fil du développement ;
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-11-11
+
 - Nouveau : menu latéral avec trois écrans, Accueil, Statistiques et Paramètres.
 - Nouveau : écran Statistiques avec la courbe de la capacité estimée au fil du temps.
 - Paramètres : la capacité nominale y est déplacée et affiche la valeur détectée,

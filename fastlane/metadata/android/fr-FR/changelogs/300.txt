@@ -1,0 +1,1 @@
+Menu latéral avec les écrans Accueil, Statistiques (courbe de la capacité estimée) et Paramètres (capacité nominale détectée, configurée et utilisée). La charge en cours distingue la capacité estimée de la charge et de l'énergie entrées.

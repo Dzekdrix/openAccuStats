@@ -1,0 +1,1 @@
+Side menu with Home, Statistics (estimated capacity curve) and Settings (detected, configured and used nominal capacity). The current charge shows the estimated capacity separately from the charge and energy taken in.
