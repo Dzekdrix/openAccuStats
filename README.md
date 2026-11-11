@@ -1,4 +1,4 @@
-# BattCap
+# openAccuStats
 
 Application Android libre qui estime la **capacité réelle** de la batterie Li-ion du téléphone
 à partir de la charge qui y entre pendant une recharge.
@@ -70,7 +70,7 @@ langue : il sera utilisé à la place du texte du CHANGELOG.
 ## Publication sur F-Droid
 
 - Dépôt public (GitHub, GitLab, Codeberg…) avec les tags `vX.Y.Z`.
-- Proposer la fiche [`fdroid/io.github.battcap.yml`](fdroid/io.github.battcap.yml) au dépôt
+- Proposer la fiche [`fdroid/io.github.dzekdrix.openaccustats.yml`](fdroid/io.github.dzekdrix.openaccustats.yml) au dépôt
   [fdroiddata](https://gitlab.com/fdroid/fdroiddata) (merge request).
 - Ensuite, chaque nouveau tag est détecté et compilé automatiquement par F-Droid.
 - Textes et captures de la fiche : `fastlane/metadata/android/` (captures dans
@@ -80,6 +80,5 @@ Choix déjà faits pour F-Droid : dépendances uniquement open source (Apache 2.
 dépôts Maven publics seulement, bloc de métadonnées de dépendances désactivé
 (`dependenciesInfo`), aucune permission réseau.
 
-> L'identifiant `io.github.battcap` est provisoire : remplacez-le par un nom de domaine
-> ou de compte qui vous appartient (par ex. `io.github.<votre_compte>.battcap`)
-> **avant la première publication**, il ne pourra plus changer ensuite.
+> L'identifiant `io.github.dzekdrix.openaccustats` (lié au compte GitHub `dzekdrix`) est définitif :
+> une fois l'app publiée, il ne peut plus changer.

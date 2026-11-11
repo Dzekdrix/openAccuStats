@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name" translatable="false">BattCap</string>
+    <string name="app_name" translatable="false">openAccuStats</string>
 
     <string name="notif_channel">Charge monitoring</string>
     <string name="notif_waiting">Waiting for a charge</string>
@@ -61,8 +61,8 @@
     <string name="outcome_saved">Last charge saved: %1$.0f mAh over %2$d %%.</string>
     <string name="outcome_none">Last charge not saved: no level change could be measured.</string>
     <string name="battopt_title">Battery optimization is on</string>
-    <string name="battopt_text">Exempting BattCap lowers the risk of Android stopping the background monitoring. It only uses the battery significantly while plugged in.</string>
-    <string name="battopt_button">Exempt BattCap</string>
+    <string name="battopt_text">Exempting openAccuStats lowers the risk of Android stopping the background monitoring. It only uses the battery significantly while plugged in.</string>
+    <string name="battopt_button">Exempt openAccuStats</string>
 
     <string name="version_label">Version %s</string>
     <string name="nav_home">Home</string>
@@ -97,7 +97,7 @@
     <string name="stats_health">Average health</string>
     <string name="notif_channel_waiting">Background monitoring</string>
     <string name="notif_channel_alerts">Alerts</string>
-    <string name="notif_missed">A charge started but Android did not allow the measurement to start. Open BattCap to measure it.</string>
+    <string name="notif_missed">A charge started but Android did not allow the measurement to start. Open openAccuStats to measure it.</string>
     <string name="nav_history">History</string>
     <string name="history_recent">Last %d</string>
     <string name="history_all">All (%d)</string>

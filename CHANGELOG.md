@@ -1,6 +1,6 @@
 # Changelog
 
-Toutes les évolutions notables de BattCap sont listées ici.
+Toutes les évolutions notables d'openAccuStats sont listées ici.
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), versions : [Semantic Versioning](https://semver.org/lang/fr/).
 
 Ajoutez vos changements sous **[Unreleased]** au fil du développement ;
@@ -8,6 +8,9 @@ Ajoutez vos changements sous **[Unreleased]** au fil du développement ;
 
 ## [Unreleased]
 
+- L'application s'appelle désormais **openAccuStats** (anciennement BattCap), avec le nouvel
+  identifiant `io.github.dzekdrix.openaccustats` : elle s'installe comme une nouvelle app, à côté
+  de l'ancienne, sans reprendre son historique.
 - Outils de build mis à jour : Gradle 9.3.1, Android Gradle Plugin 8.13.2, Kotlin 2.3.21,
   KSP 2.3.12 et Room 2.8.5 (compatible KSP2). Le build accepte désormais un JDK de 17 à 25.
 

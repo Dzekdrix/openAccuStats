@@ -59,8 +59,8 @@
     <string name="outcome_saved">Dernière charge enregistrée : %1$.0f mAh sur %2$d %%.</string>
     <string name="outcome_none">Dernière charge non enregistrée : aucun changement de niveau n\'a pu être mesuré.</string>
     <string name="battopt_title">Optimisation de batterie active</string>
-    <string name="battopt_text">Exempter BattCap réduit le risque qu\'Android arrête le suivi en arrière-plan. L\'app ne consomme vraiment que lorsque le téléphone est branché.</string>
-    <string name="battopt_button">Exempter BattCap</string>
+    <string name="battopt_text">Exempter openAccuStats réduit le risque qu\'Android arrête le suivi en arrière-plan. L\'app ne consomme vraiment que lorsque le téléphone est branché.</string>
+    <string name="battopt_button">Exempter openAccuStats</string>
 
     <string name="version_label">Version %s</string>
     <string name="nav_home">Accueil</string>
@@ -95,7 +95,7 @@
     <string name="stats_health">Santé moyenne</string>
     <string name="notif_channel_waiting">Suivi en arrière-plan</string>
     <string name="notif_channel_alerts">Alertes</string>
-    <string name="notif_missed">Une charge a commencé mais Android n\'a pas autorisé le lancement de la mesure. Ouvrez BattCap pour la mesurer.</string>
+    <string name="notif_missed">Une charge a commencé mais Android n\'a pas autorisé le lancement de la mesure. Ouvrez openAccuStats pour la mesurer.</string>
     <string name="nav_history">Historique</string>
     <string name="history_recent">%d dernières</string>
     <string name="history_all">Tout (%d)</string>

@@ -1,4 +1,4 @@
-BattCap estimates the real capacity of your phone's Li-ion battery by measuring the charge that flows into it while charging.
+openAccuStats estimates the real capacity of your phone's Li-ion battery by measuring the charge that flows into it while charging.
 
 <b>How it works</b>
 <ul>

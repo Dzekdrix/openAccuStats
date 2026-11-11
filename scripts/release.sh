@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # -----------------------------------------------------------------------------
-# Publie une nouvelle version de BattCap (Semantic Versioning).
+# Publie une nouvelle version d'openAccuStats (Semantic Versioning).
 #
 #   ./scripts/release.sh patch      0.1.0 -> 0.1.1   (corrections)
 #   ./scripts/release.sh minor      0.1.0 -> 0.2.0   (nouvelles fonctionnalités)

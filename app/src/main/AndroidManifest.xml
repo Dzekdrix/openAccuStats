@@ -19,7 +19,7 @@
         android:roundIcon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/Theme.BattCap">
+        android:theme="@style/Theme.OpenAccuStats">
 
         <activity
             android:name=".ui.MainActivity"

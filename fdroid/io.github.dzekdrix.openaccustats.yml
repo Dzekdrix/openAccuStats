@@ -1,0 +1,29 @@
+# Modèle de fiche pour le dépôt fdroiddata (https://gitlab.com/fdroid/fdroiddata).
+# À copier dans metadata/io.github.dzekdrix.openaccustats.yml lors de la merge request d'inclusion.
+Categories:
+  - System
+License: GPL-3.0-or-later
+AuthorName: dzekdrix
+SourceCode: https://github.com/dzekdrix/openAccuStats
+IssueTracker: https://github.com/dzekdrix/openAccuStats/issues
+Changelog: https://github.com/dzekdrix/openAccuStats/blob/HEAD/CHANGELOG.md
+
+AutoName: openAccuStats
+
+RepoType: git
+Repo: https://github.com/dzekdrix/openAccuStats.git
+
+Builds:
+  - versionName: 0.1.0
+    versionCode: 100
+    commit: v0.1.0
+    subdir: app
+    gradle:
+      - yes
+
+# F-Droid détecte chaque nouveau tag vX.Y.Z, lit versionCode/versionName
+# dans app/build.gradle.kts et ajoute automatiquement le build correspondant.
+AutoUpdateMode: Version
+UpdateCheckMode: Tags
+CurrentVersion: 0.1.0
+CurrentVersionCode: 100

@@ -9,11 +9,11 @@ plugins {
 }
 
 android {
-    namespace = "io.github.battcap"
+    namespace = "io.github.dzekdrix.openaccustats"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "io.github.battcap"
+        applicationId = "io.github.dzekdrix.openaccustats"
         minSdk = 26
         targetSdk = 35
         // -------------------------------------------------------------------

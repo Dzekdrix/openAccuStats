@@ -1,4 +1,4 @@
-# CLAUDE.md — BattCap
+# CLAUDE.md — openAccuStats
 
 Instructions pour reprendre le projet avec Claude Code. L'historique git (`git log`) raconte
 l'évolution ; `CHANGELOG.md` liste les changements par version ; `README.md` présente l'app.
@@ -33,7 +33,7 @@ et qui en sort (cycle de décharge). Interface en français (défaut) et anglais
 - `./gradlew clean test` (tests unitaires JVM, sans appareil), `./gradlew assembleDebug`.
 - Room : `exportSchema = true`, schémas dans `app/schemas/` — les versionner.
 
-## Architecture (`app/src/main/java/io/github/battcap/`)
+## Architecture (`app/src/main/java/io/github/dzekdrix/openaccustats/`)
 - `battery/` — logique pure, testée en JVM :
   - `BatteryReader` lit courant/compteur de charge/niveau/tension ; `CurrentNormalizer` apprend
     l'unité (µA/mA) et le signe de charge ; `magnitudeUa()` donne l'amplitude sans signe (décharge).

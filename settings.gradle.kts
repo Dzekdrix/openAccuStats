@@ -15,5 +15,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "BattCap"
+rootProject.name = "openAccuStats"
 include(":app")
