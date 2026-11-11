@@ -46,7 +46,7 @@ object CapacityEstimator {
         // à haute fréquence). Sinon on garde notre intégration, qui est une mesure indépendante :
         // sur certains appareils CHARGE_COUNTER est simplement recalculé à partir du niveau.
         val best = when {
-            agree -> qCc!!
+            agree -> qCc
             qCoulomb != null -> qCoulomb
             qCc != null -> qCc
             else -> return null
@@ -112,7 +112,7 @@ object CapacityEstimator {
         // Le compteur de la jauge est privilégié : contrairement à l'intégration du courant,
         // il reste exact même si des échantillons ont été manqués pendant le sommeil profond.
         val best = when {
-            agree -> qCc!!
+            agree -> qCc
             qCc != null -> qCc
             qCoulomb != null -> qCoulomb
             else -> return null

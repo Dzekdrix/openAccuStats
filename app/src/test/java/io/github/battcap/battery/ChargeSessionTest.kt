@@ -83,7 +83,7 @@ class ChargeSessionTest {
         assertEquals(e.bestMah * e.deltaSocPct / 100.0, e.chargeInMah, 1e-6)
         assertTrue(e.chargeInMah < e.bestMah)
         assertEquals(e.chargeInMah * e.meanVoltageV!! / 1000.0, e.energyInWh!!, 1e-6)
-        assertEquals(e.bestMah * e.meanVoltageV!! / 1000.0, e.energyWh!!, 1e-6)
+        assertEquals(e.bestMah * e.meanVoltageV / 1000.0, e.energyWh!!, 1e-6)
         assertEquals(Confidence.HIGH, e.confidence)
         assertTrue(e.warnings.isEmpty())
         assertFalse(e.reachedFull)

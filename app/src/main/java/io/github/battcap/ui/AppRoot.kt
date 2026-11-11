@@ -40,7 +40,7 @@ import io.github.battcap.R
 import kotlinx.coroutines.launch
 
 /** Les écrans, dans l'ordre du menu latéral. */
-enum class Screen(@StringRes val title: Int) {
+enum class Screen(@param:StringRes val title: Int) {
     HOME(R.string.nav_home),
     HISTORY(R.string.nav_history),
     STATS(R.string.nav_stats),
