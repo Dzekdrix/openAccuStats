@@ -1,0 +1,1 @@
+Fix: the plug-in task rescheduled itself in a loop until Android blocked it; it has been removed (the periodic check is enough). Home: "Charge stored" / "Charge given back" labels, as in the history.

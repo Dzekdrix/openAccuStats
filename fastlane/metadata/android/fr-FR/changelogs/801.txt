@@ -1,0 +1,1 @@
+Correction : la tâche lancée au branchement se reprogrammait en boucle jusqu'à être bloquée par Android ; elle est supprimée (la vérification périodique suffit). Accueil : « Charge stockée » / « Charge restituée » comme dans l'historique.

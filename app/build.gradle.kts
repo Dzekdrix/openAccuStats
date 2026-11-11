@@ -23,8 +23,8 @@ android {
         // robot de mise à jour de F-Droid (checkupdates) les lit dans ce fichier.
         // Règle : versionCode = MAJOR * 10000 + MINOR * 100 + PATCH
         // -------------------------------------------------------------------
-        versionCode = 800
-        versionName = "0.8.0"
+        versionCode = 801
+        versionName = "0.8.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
