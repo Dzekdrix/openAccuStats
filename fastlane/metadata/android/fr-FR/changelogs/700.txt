@@ -1,0 +1,1 @@
+Suivi en continu, charge comme décharge. Les cycles de décharge sont mesurés, enregistrés et affichés sur l'Accueil. La charge après 100 % est comptée jusqu'au débranchement. Filets d'erreur : un incident est consigné au lieu de faire planter l'app.

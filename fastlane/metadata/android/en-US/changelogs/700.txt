@@ -1,0 +1,1 @@
+Continuous monitoring, charging and discharging. Discharge cycles are measured, saved and shown on Home. Charge after 100 % is counted until unplugged. Error safety nets: incidents are logged instead of crashing the app.
