@@ -27,10 +27,8 @@
     <string name="estimate_title">Current charge</string>
     <string name="hint_start" formatted="false">Start monitoring, then plug in your phone. A charge covering at least 30 % (ideally 50 % or more) gives a reliable result.</string>
     <string name="estimate_waiting">Measuring… the first estimate appears after two level increments.</string>
-    <string name="estimate_window">Window: %1$d %% → %2$d %%</string>
     <string name="estimate_confidence">Confidence: %s</string>
     <string name="estimate_health">Health: %.0f %% of design capacity</string>
-    <string name="estimate_energy">Stored energy: %1$.2f Wh (mean %2$.2f V)</string>
     <string name="estimate_methods">Current integration: %1$s · Charge counter: %2$s</string>
     <string name="confidence_low">low</string>
     <string name="confidence_medium">medium</string>
@@ -43,8 +41,7 @@
     <string name="warn_above_design">Result well above design capacity: this device reports suspicious values.</string>
 
     <string name="design_title">Design capacity</string>
-    <string name="design_detected">Detected: %.0f mAh</string>
-    <string name="design_not_detected">Not detected on this device</string>
+    <string name="design_not_detected">not detected</string>
     <string name="design_manual_label">Manual value (mAh)</string>
     <string name="btn_save">Save</string>
     <string name="btn_clear">Clear</string>
@@ -68,4 +65,34 @@
     <string name="battopt_button">Exempt BattCap</string>
 
     <string name="version_label">Version %s</string>
+    <string name="nav_home">Home</string>
+    <string name="nav_stats">Statistics</string>
+    <string name="nav_settings">Settings</string>
+    <string name="nav_open_menu">Open menu</string>
+    <string name="estimate_capacity_label">Estimated total capacity</string>
+    <string name="estimate_charge_in">Charge added</string>
+    <string name="estimate_charge_in_value">%1$.0f mAh (%2$d %% → %3$d %%)</string>
+    <string name="estimate_energy_in">Energy added</string>
+    <string name="estimate_energy_total">Estimated total energy</string>
+    <string name="estimate_mean_voltage">Mean voltage</string>
+    <string name="unit_wh">%.2f Wh</string>
+    <string name="design_help">As stated by the manufacturer, often printed on the battery or in the specifications. Used to compute battery health.</string>
+    <string name="design_detected_label">Detected</string>
+    <string name="design_configured_label">Configured</string>
+    <string name="design_configured_none">none</string>
+    <string name="design_used_manual">The configured value is used.</string>
+    <string name="design_used_detected">No value configured: the detected value is used.</string>
+    <string name="design_used_none">No value available: battery health cannot be computed.</string>
+    <string name="about_title">About</string>
+    <string name="about_licence">Free software under the GNU GPLv3 licence. No network access, no tracking.</string>
+    <string name="stats_capacity_title">Estimated capacity over time</string>
+    <string name="stats_empty">No charge recorded yet. Charges appear here once you unplug the phone.</string>
+    <string name="stats_chart_description">Chart of %d estimated capacity measurements over time</string>
+    <string name="stats_tap_hint">Tap a point to see its details.</string>
+    <string name="stats_legend_reliable">Reliable measurement</string>
+    <string name="stats_legend_low">Low-confidence measurement</string>
+    <string name="stats_legend_design">Design capacity</string>
+    <string name="stats_count">Recorded charges</string>
+    <string name="stats_average">Average (reliable measurements)</string>
+    <string name="stats_health">Average health</string>
 </resources>

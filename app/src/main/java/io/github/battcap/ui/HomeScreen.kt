@@ -8,7 +8,6 @@ import android.net.Uri
 import android.os.Build
 import android.os.PowerManager
 import android.provider.Settings
-import android.text.format.DateFormat
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -19,18 +18,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -41,33 +36,26 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
-import io.github.battcap.BuildConfig
 import io.github.battcap.R
 import io.github.battcap.battery.BatterySample
 import io.github.battcap.battery.CapacityEstimate
-import io.github.battcap.battery.Confidence
-import io.github.battcap.battery.Warning
 import io.github.battcap.data.ChargeRecord
 import io.github.battcap.service.ChargeMonitorService
 import io.github.battcap.service.SessionOutcome
-import java.util.Date
 
-@OptIn(ExperimentalMaterial3Api::class)
+/** Accueil : mesures en direct, charge en cours et historique. */
 @Composable
-fun MainScreen(vm: MainViewModel = viewModel()) {
+fun HomeScreen(vm: MainViewModel, padding: PaddingValues) {
     val running by vm.running.collectAsStateWithLifecycle()
     val sample by vm.sample.collectAsStateWithLifecycle()
     val currentMa by vm.currentMa.collectAsStateWithLifecycle()
     val estimate by vm.estimate.collectAsStateWithLifecycle()
     val outcome by vm.lastOutcome.collectAsStateWithLifecycle()
     val history by vm.history.collectAsStateWithLifecycle()
-    val manual by vm.manualDesignMah.collectAsStateWithLifecycle()
 
     val context = LocalContext.current
     // La notification est facultative : le service démarre même si la permission est refusée.
@@ -81,50 +69,38 @@ fun MainScreen(vm: MainViewModel = viewModel()) {
         ) notifPermission.launch(Manifest.permission.POST_NOTIFICATIONS) else vm.start()
     }
 
-    Scaffold(topBar = { TopAppBar(title = { Text(stringResource(R.string.app_name)) }) }) { padding ->
-        LazyColumn(
-            modifier = Modifier.padding(padding),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            item { LiveCard(sample, currentMa) }
-            item {
-                if (running) OutlinedButton(onClick = vm::stop, Modifier.fillMaxWidth()) {
-                    Text(stringResource(R.string.btn_stop))
-                } else Button(onClick = onStart, Modifier.fillMaxWidth()) {
-                    Text(stringResource(R.string.btn_start))
-                }
-            }
-            item { BatteryOptimizationCard() }
-            item { EstimateCard(estimate, outcome, running, sample?.isCharging == true) }
-            item {
-                DesignCard(vm.detectedDesignMah, manual, onSave = vm::setManualDesign)
-            }
-            item {
-                Text(
-                    stringResource(R.string.history_title),
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(top = 8.dp)
-                )
-                val avg = MainViewModel.reliableAverage(history)
-                Text(
-                    when {
-                        avg != null -> stringResource(R.string.history_average, avg)
-                        history.isNotEmpty() -> stringResource(R.string.history_no_reliable)
-                        else -> stringResource(R.string.history_empty)
-                    },
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
-            items(history, key = { it.id }) { RecordRow(it, onDelete = { vm.delete(it) }) }
-            item {
-                Text(
-                    stringResource(R.string.version_label, BuildConfig.VERSION_NAME),
-                    style = MaterialTheme.typography.labelSmall,
-                    modifier = Modifier.padding(top = 16.dp)
-                )
+    LazyColumn(
+        modifier = Modifier.padding(padding),
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        item { LiveCard(sample, currentMa) }
+        item {
+            if (running) OutlinedButton(onClick = vm::stop, Modifier.fillMaxWidth()) {
+                Text(stringResource(R.string.btn_stop))
+            } else Button(onClick = onStart, Modifier.fillMaxWidth()) {
+                Text(stringResource(R.string.btn_start))
             }
         }
+        item { BatteryOptimizationCard() }
+        item { EstimateCard(estimate, outcome, running, sample?.isCharging == true) }
+        item {
+            Text(
+                stringResource(R.string.history_title),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(top = 8.dp)
+            )
+            val avg = MainViewModel.reliableAverage(history)
+            Text(
+                when {
+                    avg != null -> stringResource(R.string.history_average, avg)
+                    history.isNotEmpty() -> stringResource(R.string.history_no_reliable)
+                    else -> stringResource(R.string.history_empty)
+                },
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
+        items(history, key = { it.id }) { RecordRow(it, onDelete = { vm.delete(it) }) }
     }
 }
 
@@ -186,19 +162,31 @@ private fun EstimateCard(
             }
             return@Column
         }
+
+        // Résultat principal : capacité totale (extrapolée à 100 %)
+        Text(stringResource(R.string.estimate_capacity_label), style = MaterialTheme.typography.labelLarge)
         Text(
             stringResource(R.string.unit_mah, e.bestMah),
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold
         )
-        Text(stringResource(R.string.estimate_window, e.startLevel, e.endLevel))
         Text(stringResource(R.string.estimate_confidence, stringResource(e.confidence.label())))
         if (e.reachedFull) {
             Text("✓ " + stringResource(R.string.estimate_full), color = MaterialTheme.colorScheme.primary)
         }
         e.healthPct?.let { Text(stringResource(R.string.estimate_health, it)) }
+
+        HorizontalDivider(Modifier.padding(vertical = 6.dp))
+
+        // Ce qui a réellement été mesuré pendant cette charge
+        Metric(
+            stringResource(R.string.estimate_charge_in),
+            stringResource(R.string.estimate_charge_in_value, e.chargeInMah, e.startLevel, e.endLevel)
+        )
+        e.energyInWh?.let { Metric(stringResource(R.string.estimate_energy_in), stringResource(R.string.unit_wh, it)) }
         if (e.energyWh != null && e.meanVoltageV != null) {
-            Text(stringResource(R.string.estimate_energy, e.energyWh, e.meanVoltageV))
+            Metric(stringResource(R.string.estimate_energy_total), stringResource(R.string.unit_wh, e.energyWh))
+            Metric(stringResource(R.string.estimate_mean_voltage), stringResource(R.string.unit_v, e.meanVoltageV))
         }
         Text(
             stringResource(
@@ -206,37 +194,14 @@ private fun EstimateCard(
                 e.coulombMah?.let { stringResource(R.string.unit_mah, it) } ?: "—",
                 e.chargeCounterMah?.let { stringResource(R.string.unit_mah, it) } ?: "—"
             ),
-            style = MaterialTheme.typography.bodySmall
+            style = MaterialTheme.typography.bodySmall,
+            modifier = Modifier.padding(top = 4.dp)
         )
         e.warnings.forEach {
-            Text("⚠ " + stringResource(it.label()), color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall)
-        }
-    }
-}
-
-@Composable
-private fun DesignCard(detected: Double?, manual: Double?, onSave: (Double?) -> Unit) = Card(Modifier.fillMaxWidth()) {
-    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(stringResource(R.string.design_title), style = MaterialTheme.typography.titleMedium)
-        Text(
-            detected?.let { stringResource(R.string.design_detected, it) }
-                ?: stringResource(R.string.design_not_detected)
-        )
-        var text by remember(manual) { mutableStateOf(manual?.let { "%.0f".format(it) } ?: "") }
-        OutlinedTextField(
-            value = text,
-            onValueChange = { v -> text = v.filter { it.isDigit() }.take(6) },
-            label = { Text(stringResource(R.string.design_manual_label)) },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth()
-        )
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Button(onClick = { onSave(text.toDoubleOrNull()?.takeIf { it > 0 }) }) {
-                Text(stringResource(R.string.btn_save))
-            }
-            TextButton(onClick = { text = ""; onSave(null) }) { Text(stringResource(R.string.btn_clear)) }
+            Text(
+                "⚠ " + stringResource(it.label()), color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall
+            )
         }
     }
 }
@@ -244,8 +209,6 @@ private fun DesignCard(detected: Double?, manual: Double?, onSave: (Double?) -> 
 @Composable
 private fun RecordRow(r: ChargeRecord, onDelete: () -> Unit) {
     val context = LocalContext.current
-    val date = DateFormat.getMediumDateFormat(context).format(Date(r.endedAtEpochMs)) + " " +
-            DateFormat.getTimeFormat(context).format(Date(r.endedAtEpochMs))
     Card(Modifier.fillMaxWidth()) {
         Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
@@ -253,8 +216,7 @@ private fun RecordRow(r: ChargeRecord, onDelete: () -> Unit) {
                 Text(
                     stringResource(
                         R.string.history_item, r.startLevel, r.endLevel,
-                        stringResource(runCatching { Confidence.valueOf(r.confidence) }
-                            .getOrDefault(Confidence.LOW).label())
+                        stringResource(confidenceOf(r.confidence).label())
                     ),
                     style = MaterialTheme.typography.bodySmall
                 )
@@ -265,7 +227,7 @@ private fun RecordRow(r: ChargeRecord, onDelete: () -> Unit) {
                         color = MaterialTheme.colorScheme.primary
                     )
                 }
-                Text(date, style = MaterialTheme.typography.bodySmall)
+                Text(formatDateTime(context, r.endedAtEpochMs), style = MaterialTheme.typography.bodySmall)
             }
             TextButton(onClick = onDelete) { Text(stringResource(R.string.btn_delete)) }
         }
@@ -306,24 +268,4 @@ private fun BatteryOptimizationCard() {
             }) { Text(stringResource(R.string.battopt_button)) }
         }
     }
-}
-
-@Composable
-private fun Metric(label: String, value: String) = Row(Modifier.fillMaxWidth()) {
-    Text(label, Modifier.weight(1f))
-    Text(value, fontWeight = FontWeight.Medium)
-}
-
-private fun Confidence.label() = when (this) {
-    Confidence.LOW -> R.string.confidence_low
-    Confidence.MEDIUM -> R.string.confidence_medium
-    Confidence.HIGH -> R.string.confidence_high
-}
-
-private fun Warning.label() = when (this) {
-    Warning.SHORT_WINDOW -> R.string.warn_short_window
-    Warning.GAPS -> R.string.warn_gaps
-    Warning.HOT -> R.string.warn_hot
-    Warning.METHODS_DISAGREE -> R.string.warn_disagree
-    Warning.ABOVE_DESIGN -> R.string.warn_above_design
 }

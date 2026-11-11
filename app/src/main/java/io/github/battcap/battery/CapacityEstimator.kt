@@ -9,10 +9,12 @@ enum class Warning { SHORT_WINDOW, GAPS, HOT, METHODS_DISAGREE, ABOVE_DESIGN }
 data class CapacityEstimate(
     val startLevel: Int,
     val endLevel: Int,
-    val bestMah: Double,                   // valeur retenue
-    val coulombMah: Double?,               // méthode 1 : intégration du courant
-    val chargeCounterMah: Double?,         // méthode 2 : delta du compteur de la jauge
-    val energyWh: Double?,                 // énergie stockable estimée (côté batterie)
+    val bestMah: Double,                   // capacité TOTALE estimée (extrapolée à 100 %)
+    val coulombMah: Double?,               // méthode 1 : intégration du courant (extrapolée)
+    val chargeCounterMah: Double?,         // méthode 2 : delta du compteur de la jauge (extrapolé)
+    val chargeInMah: Double,               // charge réellement entrée entre startLevel et endLevel
+    val energyInWh: Double?,               // énergie réellement entrée (côté batterie)
+    val energyWh: Double?,                 // énergie TOTALE estimée (extrapolée à 100 %)
     val meanVoltageV: Double?,
     val healthPct: Double?,                // vs capacité nominale si connue
     val durationS: Double,
@@ -48,7 +50,14 @@ object CapacityEstimator {
             else -> return null
         }
 
-        val energyWh = snap.energyInWh.takeIf { it > 0 }?.div(frac)
+        // Tension moyenne de la fenêtre, connue seulement si le courant est mesuré.
+        // L'énergie est déduite de la charge retenue × cette tension, pour rester cohérente
+        // avec la capacité affichée quelle que soit la méthode choisie.
+        val meanVoltageV = if (snap.chargeInMah > 0 && snap.energyInWh > 0)
+            snap.energyInWh * 1000.0 / snap.chargeInMah else null
+        val chargeInMah = best * frac
+        val energyInWh = meanVoltageV?.let { chargeInMah * it / 1000.0 }
+        val energyWh = meanVoltageV?.let { best * it / 1000.0 }
 
         val warnings = buildList {
             if (dSoc < 30) add(Warning.SHORT_WINDOW)
@@ -70,9 +79,10 @@ object CapacityEstimator {
             bestMah = best,
             coulombMah = qCoulomb,
             chargeCounterMah = qCc,
+            chargeInMah = chargeInMah,
+            energyInWh = energyInWh,
             energyWh = energyWh,
-            meanVoltageV = if (snap.chargeInMah > 0 && snap.energyInWh > 0)
-                snap.energyInWh * 1000.0 / snap.chargeInMah else null,
+            meanVoltageV = meanVoltageV,
             healthPct = designCapacityMah?.let { best / it * 100.0 },
             durationS = snap.durationS,
             maxTempC = session.maxTempC,

@@ -8,6 +8,13 @@ Ajoutez vos changements sous **[Unreleased]** au fil du développement ;
 
 ## [Unreleased]
 
+- Nouveau : menu latéral avec trois écrans, Accueil, Statistiques et Paramètres.
+- Nouveau : écran Statistiques avec la courbe de la capacité estimée au fil du temps.
+- Paramètres : la capacité nominale y est déplacée et affiche la valeur détectée,
+  la valeur configurée et celle réellement utilisée.
+- La charge en cours distingue la capacité totale estimée de la charge et de
+  l'énergie réellement entrées pendant la charge.
+
 ## [0.2.0] - 2026-11-11
 
 - Nouveau : indicateur « charge menée jusqu'au bout » dans l'historique
