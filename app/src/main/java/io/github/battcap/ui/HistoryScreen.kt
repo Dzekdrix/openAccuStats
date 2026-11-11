@@ -125,7 +125,12 @@ private fun RecordContent(r: ChargeRecord, partial: Boolean, onDelete: () -> Uni
     val secondary = if (partial) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface
     Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            if (partial) PartialTag()
+            if (r.isDischarge || partial) {
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    if (r.isDischarge) DischargeTag()
+                    if (partial) PartialTag()
+                }
+            }
             // Capacité TOTALE estimée (extrapolée à 100 %) : le résultat principal
             LabeledValue(
                 label = stringResource(R.string.history_capacity_label),
@@ -133,9 +138,11 @@ private fun RecordContent(r: ChargeRecord, partial: Boolean, onDelete: () -> Uni
                 color = secondary,
                 strong = !partial
             )
-            // Charge électrique réellement entrée pendant CE cycle de charge
+            // Charge électrique réellement entrée (charge) ou sortie (décharge) pendant ce cycle
             LabeledValue(
-                label = stringResource(R.string.history_charge_label),
+                label = stringResource(
+                    if (r.isDischarge) R.string.history_discharged_label else R.string.history_charge_label
+                ),
                 value = stringResource(R.string.unit_mah, r.chargeInMah),
                 color = secondary,
                 strong = false
@@ -195,6 +202,20 @@ private fun PartialTag() = Surface(
 ) {
     Text(
         stringResource(R.string.history_partial_tag),
+        style = MaterialTheme.typography.labelSmall,
+        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+    )
+}
+
+/** Distingue un cycle de décharge d'un cycle de charge, teinte différente de PartialTag. */
+@Composable
+private fun DischargeTag() = Surface(
+    shape = MaterialTheme.shapes.small,
+    color = MaterialTheme.colorScheme.tertiaryContainer,
+    contentColor = MaterialTheme.colorScheme.onTertiaryContainer
+) {
+    Text(
+        stringResource(R.string.history_discharge_tag),
         style = MaterialTheme.typography.labelSmall,
         modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
     )

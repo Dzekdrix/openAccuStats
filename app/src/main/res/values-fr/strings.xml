@@ -56,7 +56,7 @@
     <string name="outcome_saved">Dernière charge enregistrée : %1$.0f mAh sur %2$d %%.</string>
     <string name="outcome_none">Dernière charge non enregistrée : aucun changement de niveau n\'a pu être mesuré.</string>
     <string name="battopt_title">Optimisation de batterie active</string>
-    <string name="battopt_text">Exempter BattCap lui permet d\'attendre une charge sans aucune notification et évite qu\'Android interrompe la mesure. L\'app ne consomme vraiment que lorsque le téléphone est branché.</string>
+    <string name="battopt_text">Exempter BattCap réduit le risque qu\'Android arrête le suivi en arrière-plan. L\'app ne consomme vraiment que lorsque le téléphone est branché.</string>
     <string name="battopt_button">Exempter BattCap</string>
 
     <string name="version_label">Version %s</string>
@@ -90,9 +90,8 @@
     <string name="stats_count">Charges enregistrées</string>
     <string name="stats_average">Moyenne pondérée</string>
     <string name="stats_health">Santé moyenne</string>
-    <string name="notif_channel_waiting">Attente d\'une charge</string>
+    <string name="notif_channel_waiting">Suivi en arrière-plan</string>
     <string name="notif_channel_alerts">Alertes</string>
-    <string name="notif_waiting_min">En attente d\'une charge. Exemptez BattCap de l\'optimisation de batterie pour masquer cette notification.</string>
     <string name="notif_missed">Une charge a commencé mais Android n\'a pas autorisé le lancement de la mesure. Ouvrez BattCap pour la mesurer.</string>
     <string name="nav_history">Historique</string>
     <string name="history_recent">%d dernières</string>
@@ -106,6 +105,8 @@
     <string name="history_period">%1$s - %2$s</string>
     <string name="history_ended_at">Terminée le %s</string>
     <string name="history_charge_label">Charge stockée :</string>
+    <string name="history_discharged_label">Charge restituée :</string>
+    <string name="history_discharge_tag">Décharge</string>
     <string name="diag_title">Diagnostic du suivi</string>
     <string name="diag_help">Indique pourquoi une charge n\'aurait pas été mesurée. Copiez-le pour le partager si besoin : il ne contient aucune donnée personnelle.</string>
     <string name="diag_yes">oui</string>

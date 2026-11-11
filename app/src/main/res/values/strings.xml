@@ -58,7 +58,7 @@
     <string name="outcome_saved">Last charge saved: %1$.0f mAh over %2$d %%.</string>
     <string name="outcome_none">Last charge not saved: no level change could be measured.</string>
     <string name="battopt_title">Battery optimization is on</string>
-    <string name="battopt_text">Exempting BattCap lets it wait for a charge with no notification and keeps Android from stopping the measurement. It only uses the battery significantly while plugged in.</string>
+    <string name="battopt_text">Exempting BattCap lowers the risk of Android stopping the background monitoring. It only uses the battery significantly while plugged in.</string>
     <string name="battopt_button">Exempt BattCap</string>
 
     <string name="version_label">Version %s</string>
@@ -92,9 +92,8 @@
     <string name="stats_count">Recorded charges</string>
     <string name="stats_average">Weighted average</string>
     <string name="stats_health">Average health</string>
-    <string name="notif_channel_waiting">Waiting for a charge</string>
+    <string name="notif_channel_waiting">Background monitoring</string>
     <string name="notif_channel_alerts">Alerts</string>
-    <string name="notif_waiting_min">Waiting for a charge. Exempt BattCap from battery optimization to hide this notification.</string>
     <string name="notif_missed">A charge started but Android did not allow the measurement to start. Open BattCap to measure it.</string>
     <string name="nav_history">History</string>
     <string name="history_recent">Last %d</string>
@@ -108,6 +107,8 @@
     <string name="history_period">%1$s - %2$s</string>
     <string name="history_ended_at">Ended %s</string>
     <string name="history_charge_label">Charge stored:</string>
+    <string name="history_discharged_label">Charge given back:</string>
+    <string name="history_discharge_tag">Discharge</string>
     <string name="diag_title">Monitoring diagnostics</string>
     <string name="diag_help">Shows why a charge may not have been measured. Copy it to share it if needed: it contains no personal data.</string>
     <string name="diag_yes">yes</string>

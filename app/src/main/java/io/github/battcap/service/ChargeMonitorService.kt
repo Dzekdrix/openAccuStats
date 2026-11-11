@@ -18,6 +18,7 @@ import io.github.battcap.battery.CapacityEstimate
 import io.github.battcap.battery.CapacityEstimator
 import io.github.battcap.battery.ChargeSession
 import io.github.battcap.battery.CurrentNormalizer
+import io.github.battcap.battery.DischargeSession
 import io.github.battcap.data.AppDatabase
 import io.github.battcap.data.ChargeRecord
 import io.github.battcap.data.DiagnosticLog
@@ -33,18 +34,23 @@ import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.math.roundToInt
 
 /**
- * Service au premier plan qui échantillonne la batterie.
+ * Service au premier plan qui échantillonne la batterie en continu.
  *
+ * - Tant que le suivi est activé, le service tourne sans interruption : il mesure un cycle de
+ *   charge pendant que le téléphone est branché, et un cycle de décharge pendant qu'il ne l'est
+ *   pas. Un service au premier plan doit toujours afficher une notification ; elle reste
+ *   discrète (priorité minimale, sans icône) hors charge.
  * - Pendant la charge, un wakelock partiel garde le processeur éveillé : sans lui, écran éteint,
- *   le téléphone se met en veille profonde (même branché) et la boucle s'arrête. La mesure
- *   n'aurait alors presque aucun échantillon. Le coût est négligeable puisque l'appareil est
- *   sur secteur, et le wakelock est relâché dès que la charge est terminée ou débranchée.
+ *   le téléphone se met en veille profonde (même branché) et la boucle s'arrête. Le coût est
+ *   négligeable puisque l'appareil est sur secteur, et le wakelock est relâché dès que la charge
+ *   est terminée ou débranchée. Pendant la décharge, aucun wakelock n'est pris : la mesure
+ *   s'appuie sur le compteur de charge matériel, fiable même avec des échantillons espacés.
  * - Le branchement/débranchement est détecté dans la boucle à partir de l'échantillon lui-même ;
  *   les broadcasts POWER_CONNECTED/DISCONNECTED servent seulement à réveiller la boucle plus tôt.
  *   Ainsi, lancer le suivi alors que le téléphone est déjà branché fonctionne aussi.
  * - Tout tourne sur le thread principal : le travail est minime et évite les accès concurrents.
- * - Le service ne tourne normalement que pendant une charge : voir MonitoringController pour
- *   l'attente sans notification.
+ * - Le service n'est arrêté que par l'utilisateur (désactivation du suivi) ou par Android ;
+ *   voir MonitoringController pour la remise en place après un arrêt forcé.
  */
 class ChargeMonitorService : Service() {
 
@@ -54,12 +60,11 @@ class ChargeMonitorService : Service() {
     private lateinit var wakeLock: PowerManager.WakeLock
 
     private val normalizer = CurrentNormalizer()
-    private var session: ChargeSession? = null
+    private var chargeSession: ChargeSession? = null
+    private var dischargeSession: DischargeSession? = null
     private var sessionStartedAtMs = 0L
     private var wasPlugged: Boolean? = null
     private var started = false
-    private var stopping = false
-    private var wasWaitingShown: Boolean? = null
     private val wake = Channel<Unit>(Channel.CONFLATED)
 
     private val powerReceiver = object : BroadcastReceiver() {
@@ -128,51 +133,48 @@ class ChargeMonitorService : Service() {
     }
 
     private fun handle(s: BatterySample) {
-        if (stopping) return
         val plugged = s.plugged != 0
-        if (plugged && wasPlugged != true) startSession()
-        if (!plugged && wasPlugged == true) finishSession()
+        // "!= true" / "!= false" plutôt que "== false" / "== true" : au tout premier échantillon
+        // (wasPlugged encore null), la bonne session démarre aussi, sans branchement/débranchement.
+        if (plugged && wasPlugged != true) {
+            finishDischargeSession()
+            startChargeSession()
+        }
+        if (!plugged && wasPlugged != false) {
+            finishChargeSession()
+            startDischargeSession()
+        }
         wasPlugged = plugged
 
-        // Pas de charge : si l'app est exemptée d'optimisation de batterie, on laisse la tâche
-        // « en charge » nous réveiller au prochain branchement et on s'arrête (plus de notification).
-        // Sinon on reste actif, avec la notification d'attente minimale.
-        if (!plugged) {
-            if (MonitoringController.canWaitSilently(this)) {
-                stopping = true
-                MonitoringController.scheduleJobs(this)
-                DiagnosticLog.log(this, "Débranché : arrêt du service, attente silencieuse du prochain branchement")
-                stopSelf()
-                return
-            }
-            if (wasWaitingShown != true) updateNotification(getString(R.string.notif_waiting_min), charging = false)
-            wasWaitingShown = true
+        val charging = chargeSession
+        if (charging != null) {
+            charging.onSample(s)
+            if (s.isCharging) publishEstimate(charging)
         } else {
-            wasWaitingShown = false
-        }
-
-        val current = session
-        if (current != null) {
-            current.onSample(s)
-            if (s.isCharging) publishEstimate(current)
-        } else {
+            dischargeSession?.onSample(s)
             s.currentRaw?.let { normalizer.feed(it, charging = false) }
         }
 
         // Wakelock seulement tant que la charge progresse vraiment
-        val needAwake = current != null && s.isCharging && !s.isFull && !current.reachedFull
+        val needAwake = charging != null && s.isCharging && !s.isFull && !charging.reachedFull
         if (needAwake) wakeLock.acquire(WAKE_TIMEOUT_MS) // ré-armé à chaque échantillon
         else if (wakeLock.isHeld) wakeLock.release()
 
         ChargeRepository.publishSample(s, s.currentRaw?.let { normalizer.displayMa(it, s.isCharging) })
     }
 
-    private fun startSession() {
-        session = ChargeSession(normalizer)
+    private fun startChargeSession() {
+        chargeSession = ChargeSession(normalizer)
         sessionStartedAtMs = System.currentTimeMillis()
         DiagnosticLog.log(this, "Charge détectée : début de la mesure")
         ChargeRepository.publishEstimate(null)
         updateNotification(getString(R.string.notif_charging), charging = true)
+    }
+
+    private fun startDischargeSession() {
+        dischargeSession = DischargeSession(normalizer)
+        sessionStartedAtMs = System.currentTimeMillis()
+        updateNotification(getString(R.string.notif_waiting), charging = false)
     }
 
     private fun publishEstimate(current: ChargeSession) {
@@ -181,10 +183,10 @@ class ChargeMonitorService : Service() {
         updateNotification(getString(R.string.notif_estimate, est.bestMah, est.deltaSocPct), charging = true)
     }
 
-    /** Fige la mesure (débranchement ou arrêt du suivi) et l'enregistre si elle est exploitable. */
-    private fun finishSession() {
-        val ended = session ?: return
-        session = null
+    /** Fige la mesure de charge (débranchement ou arrêt du suivi) et l'enregistre si exploitable. */
+    private fun finishChargeSession() {
+        val ended = chargeSession ?: return
+        chargeSession = null
         if (wakeLock.isHeld) wakeLock.release()
 
         val est = CapacityEstimator.estimate(ended, settings.designMah)
@@ -194,7 +196,7 @@ class ChargeMonitorService : Service() {
                 SessionOutcome.NoMeasurement
             }
             else -> {
-                save(est, ended.lastPlugged)
+                save(est, ended.lastPlugged, isDischarge = false)
                 DiagnosticLog.log(
                     this,
                     "Fin de charge enregistrée : ${est.startLevel} % - ${est.endLevel} %, ${est.bestMah.roundToInt()} mAh"
@@ -206,7 +208,20 @@ class ChargeMonitorService : Service() {
         ChargeRepository.publishEstimate(null)
     }
 
-    private fun save(est: CapacityEstimate, plugged: Int) {
+    /** Fige la mesure de décharge (branchement ou arrêt du suivi) et l'enregistre si exploitable. */
+    private fun finishDischargeSession() {
+        val ended = dischargeSession ?: return
+        dischargeSession = null
+
+        val est = CapacityEstimator.estimateDischarge(ended, settings.designMah) ?: return
+        save(est, plugged = 0, isDischarge = true)
+        DiagnosticLog.log(
+            this,
+            "Fin de décharge enregistrée : ${est.startLevel} % - ${est.endLevel} %, ${est.bestMah.roundToInt()} mAh"
+        )
+    }
+
+    private fun save(est: CapacityEstimate, plugged: Int, isDischarge: Boolean) {
         val record = ChargeRecord(
             endedAtEpochMs = System.currentTimeMillis(),
             startedAtEpochMs = sessionStartedAtMs,
@@ -220,7 +235,8 @@ class ChargeMonitorService : Service() {
             maxTempC = est.maxTempC,
             plugged = plugged,
             confidence = est.confidence.name,
-            reachedFull = est.reachedFull
+            reachedFull = est.reachedFull,
+            isDischarge = isDischarge
         )
         val dao = AppDatabase.get(applicationContext).chargeRecords()
         // Portée indépendante du service : l'écriture aboutit même si le service s'arrête
@@ -233,8 +249,9 @@ class ChargeMonitorService : Service() {
     }
 
     override fun onDestroy() {
-        if (!stopping) DiagnosticLog.log(this, "Service arrêté")
-        finishSession() // arrêt du suivi pendant une charge : la mesure en cours est conservée
+        DiagnosticLog.log(this, "Service arrêté")
+        finishChargeSession() // arrêt du suivi pendant une charge : la mesure en cours est conservée
+        finishDischargeSession() // idem pendant une décharge
         if (wakeLock.isHeld) wakeLock.release()
         unregisterReceiver(powerReceiver)
         scope.cancel()

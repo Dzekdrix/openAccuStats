@@ -8,6 +8,14 @@ Ajoutez vos changements sous **[Unreleased]** au fil du développement ;
 
 ## [Unreleased]
 
+- Le suivi tourne désormais en continu dès qu'il est activé, charge comme décharge, plutôt que
+  de se limiter au branchement ; il se relance automatiquement après un redémarrage du téléphone
+  s'il était activé avant.
+- Nouveau : les cycles de décharge sont eux aussi mesurés et enregistrés dans l'historique
+  (capacité totale estimée, pourcentage de départ et de fin, étiquette « Décharge »).
+- Correction : la charge entrée après avoir atteint 100 % (phase à tension constante du
+  chargeur) est désormais comptée jusqu'au débranchement, au lieu d'être ignorée.
+
 ## [0.6.0] - 2026-11-11
 
 - Démarrage au branchement fiabilisé : vérification périodique de secours (15 min),

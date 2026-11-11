@@ -9,7 +9,6 @@ import android.content.Intent
 import android.os.Build
 import android.os.PowerManager
 import androidx.core.content.ContextCompat
-import io.github.battcap.battery.BatteryReader
 import io.github.battcap.data.DiagnosticLog
 import io.github.battcap.data.Settings
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,22 +16,25 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 /**
- * Décide comment le suivi attend une charge.
+ * Démarre et surveille le service de mesure.
  *
- * Un service au premier plan doit TOUJOURS afficher une notification. Pour ne rien afficher
- * pendant l'attente, aucun service ne tourne alors, et plusieurs mécanismes redémarrent la
- * mesure au branchement, du plus rapide au plus robuste :
- *  1. tâche JobScheduler « en charge » : se déclenche au branchement ;
- *  2. vérification périodique (toutes les 15 min) : filet de sécurité si la tâche 1 n'a pas
- *     été exécutée (surcouche constructeur, tâche annulée…) ;
+ * Le service tourne en continu tant que le suivi est activé : il mesure un cycle de charge
+ * pendant que le téléphone est branché, un cycle de décharge sinon. Un service au premier plan
+ * doit TOUJOURS afficher une notification ; elle reste discrète (priorité minimale, sans icône)
+ * hors charge.
+ *
+ * S'il est arrêté de force (Android tue le processus, surcouche constructeur agressive…),
+ * plusieurs mécanismes le relancent, du plus rapide au plus robuste :
+ *  1. tâche JobScheduler « en charge » : se déclenche au prochain branchement ;
+ *  2. vérification périodique (toutes les 15 min) : filet de sécurité général ;
  *  3. récepteur BOOT_COMPLETED / MY_PACKAGE_REPLACED : remet tout en place après un
- *     redémarrage ou une mise à jour de l'app (qui peut annuler les tâches).
+ *     redémarrage ou une mise à jour de l'app (qui peut annuler les tâches programmées).
  *
  * Contrainte d'Android 12+ : un service au premier plan ne peut démarrer depuis l'arrière-plan
- * que si l'utilisateur a désactivé l'optimisation de batterie pour l'app (exceptions :
- * démarrage du téléphone et mise à jour de l'app). D'où deux modes :
- *  - exemptée     -> attente silencieuse (aucune notification, aucun service) ;
- *  - non exemptée -> le service reste actif avec une notification d'attente minimale.
+ * que si l'utilisateur a désactivé l'optimisation de batterie pour l'app, ou si le démarrage a
+ * lieu depuis une tâche JobScheduler, au démarrage du téléphone ou après une mise à jour de
+ * l'app (exceptions reconnues par Android). Exempter l'app réduit surtout le risque qu'Android
+ * tue le service en premier lieu.
  */
 object MonitoringController {
 
@@ -49,10 +51,9 @@ object MonitoringController {
 
     fun isEnabled(context: Context) = Settings(context).monitoringEnabled
 
+    /** Exemptée d'optimisation de batterie (réduit le risque qu'Android tue le service). */
     fun canWaitSilently(context: Context): Boolean =
         context.getSystemService(PowerManager::class.java).isIgnoringBatteryOptimizations(context.packageName)
-
-    fun isPlugged(context: Context): Boolean? = BatteryReader(context).read()?.let { it.plugged != 0 }
 
     /** Appelé depuis l'interface (premier plan : le démarrage du service est autorisé). */
     fun enable(context: Context) {
@@ -71,20 +72,17 @@ object MonitoringController {
     }
 
     /**
-     * Remet en place le bon mode d'attente (tâches + service si nécessaire).
-     * À appeler seulement quand le démarrage d'un service au premier plan est autorisé :
-     * app ouverte, démarrage du téléphone, mise à jour de l'app, ou app exemptée.
+     * Remet le service en route s'il devrait tourner et qu'il ne tourne pas (premier démarrage,
+     * ou relance après un arrêt forcé). À appeler quand le démarrage d'un service au premier
+     * plan est autorisé : app ouverte, démarrage du téléphone, mise à jour de l'app, tâche
+     * JobScheduler, ou app exemptée.
      */
     fun ensure(context: Context, reason: String) {
         refresh(context)
         if (!isEnabled(context)) return
         scheduleJobs(context)
-        val plugged = isPlugged(context) ?: false
-        val silent = canWaitSilently(context)
-        if (plugged || !silent) {
-            if (!ChargeRepository.running.value) {
-                DiagnosticLog.log(context, "[$reason] démarrage du service (branché=$plugged, exemptée=$silent)")
-            }
+        if (!ChargeRepository.running.value) {
+            DiagnosticLog.log(context, "[$reason] démarrage du service")
             startService(context)
         }
     }

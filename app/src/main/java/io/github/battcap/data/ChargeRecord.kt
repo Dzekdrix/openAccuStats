@@ -34,16 +34,19 @@ data class ChargeRecord(
     /** Charge menée jusqu'au bout (statut FULL ou chute du courant à 100 %). Ajouté en v2. */
     @ColumnInfo(defaultValue = "0") val reachedFull: Boolean = false,
     /** Début de la charge (branchement ou lancement du suivi). Ajouté en v3 : null pour les charges plus anciennes. */
-    val startedAtEpochMs: Long? = null
+    val startedAtEpochMs: Long? = null,
+    /** Cycle de décharge plutôt que de charge. Ajouté en v4 : false pour les charges existantes. */
+    @ColumnInfo(defaultValue = "0") val isDischarge: Boolean = false
 )
 
 // Propriétés calculées en extensions : Room ne les confond pas avec des colonnes.
-val ChargeRecord.deltaSocPct get() = endLevel - startLevel
+// En valeur absolue : pour une décharge, startLevel > endLevel.
+val ChargeRecord.deltaSocPct get() = kotlin.math.abs(endLevel - startLevel)
 
 /**
- * Charge électrique réellement entrée pendant ce cycle de charge (mAh).
+ * Charge électrique réellement entrée (ou sortie, pour une décharge) pendant ce cycle (mAh).
  * bestMah est la capacité totale extrapolée à 100 % : on la ramène à la variation de niveau
- * mesurée, ce qui redonne exactement la charge mesurée (bestMah = charge entrée ÷ Δniveau).
+ * mesurée, ce qui redonne exactement la charge mesurée (bestMah = charge mesurée ÷ Δniveau).
  */
 val ChargeRecord.chargeInMah get() = bestMah * deltaSocPct / 100.0
 
@@ -62,7 +65,7 @@ interface ChargeRecordDao {
     suspend fun delete(record: ChargeRecord)
 }
 
-@Database(entities = [ChargeRecord::class], version = 3, exportSchema = true)
+@Database(entities = [ChargeRecord::class], version = 4, exportSchema = true)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun chargeRecords(): ChargeRecordDao
 
@@ -81,11 +84,18 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        /** v3 -> v4 : ajout de isDischarge. Les mesures existantes sont des charges (valeur 0). */
+        private val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE charge_records ADD COLUMN isDischarge INTEGER NOT NULL DEFAULT 0")
+            }
+        }
+
         @Volatile private var instance: AppDatabase? = null
 
         fun get(context: Context): AppDatabase = instance ?: synchronized(this) {
             instance ?: Room.databaseBuilder(context.applicationContext, AppDatabase::class.java, "battcap.db")
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
                 .build().also { instance = it }
         }
     }

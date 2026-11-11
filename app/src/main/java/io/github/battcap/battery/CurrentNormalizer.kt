@@ -56,6 +56,13 @@ class CurrentNormalizer(
     }
 
     /**
+     * Amplitude du courant en µA, sans tenir compte du signe. Utile en décharge : seule
+     * l'unité (toujours apprise, en charge comme en décharge) est nécessaire, pas le signe
+     * (qui ne s'apprend qu'en charge et peut donc être encore inconnu).
+     */
+    fun magnitudeUa(raw: Int): Long? = factorToUa?.let { abs(raw.toLong() * it) }
+
+    /**
      * Courant à afficher (mA, positif = entrant). Avant que le signe soit connu,
      * on se fie au statut : en charge le courant entre, sinon il sort.
      */

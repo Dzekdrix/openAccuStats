@@ -31,7 +31,9 @@ object CapacityEstimator {
     private const val AGREEMENT = 0.10
 
     fun estimate(session: ChargeSession, designCapacityMah: Double?): CapacityEstimate? {
-        val snap = session.snapshot ?: return null
+        // finalSnapshot() inclut, une fois 100 % atteint, la charge encore entrée en fin de
+        // charge (phase à tension constante) jusqu'au dernier échantillon connu.
+        val snap = session.finalSnapshot() ?: return null
         val dSoc = snap.endLevel - snap.startLevel
         if (dSoc <= 0) return null
         val frac = dSoc / 100.0
@@ -87,6 +89,63 @@ object CapacityEstimator {
             durationS = snap.durationS,
             maxTempC = session.maxTempC,
             reachedFull = session.reachedFull,
+            confidence = confidence,
+            warnings = warnings
+        )
+    }
+
+    /**
+     * Même principe que [estimate], pour un cycle de décharge.
+     * Pas de tension moyenne disponible (seule l'amplitude du courant est intégrée) : l'énergie
+     * n'est donc pas estimée ici. [CapacityEstimate.endLevel] < [CapacityEstimate.startLevel].
+     */
+    fun estimateDischarge(session: DischargeSession, designCapacityMah: Double?): CapacityEstimate? {
+        val snap = session.snapshot ?: return null
+        val dSoc = snap.startLevel - snap.endLevel
+        if (dSoc <= 0) return null
+        val frac = dSoc / 100.0
+
+        val qCoulomb = snap.dischargedMah.takeIf { it > 0 }?.div(frac)
+        val qCc = snap.counterDeltaMah?.takeIf { it > 0 }?.div(frac)
+        val agree = qCoulomb != null && qCc != null && abs(qCc - qCoulomb) / qCoulomb <= AGREEMENT
+
+        // Le compteur de la jauge est privilégié : contrairement à l'intégration du courant,
+        // il reste exact même si des échantillons ont été manqués pendant le sommeil profond.
+        val best = when {
+            agree -> qCc!!
+            qCc != null -> qCc
+            qCoulomb != null -> qCoulomb
+            else -> return null
+        }
+        val chargeInMah = best * frac
+
+        val warnings = buildList {
+            if (dSoc < 30) add(Warning.SHORT_WINDOW)
+            if (session.gapsDetected > 0) add(Warning.GAPS)
+            if (session.maxTempC > 40f) add(Warning.HOT)
+            if (qCoulomb != null && qCc != null && !agree) add(Warning.METHODS_DISAGREE)
+            if (designCapacityMah != null && best > designCapacityMah * 1.15) add(Warning.ABOVE_DESIGN)
+        }
+        val confidence = when {
+            dSoc >= 50 && warnings.isEmpty() -> Confidence.HIGH
+            dSoc >= 30 && Warning.ABOVE_DESIGN !in warnings -> Confidence.MEDIUM
+            else -> Confidence.LOW
+        }
+
+        return CapacityEstimate(
+            startLevel = snap.startLevel,
+            endLevel = snap.endLevel,
+            bestMah = best,
+            coulombMah = qCoulomb,
+            chargeCounterMah = qCc,
+            chargeInMah = chargeInMah,
+            energyInWh = null,
+            energyWh = null,
+            meanVoltageV = null,
+            healthPct = designCapacityMah?.let { best / it * 100.0 },
+            durationS = snap.durationS,
+            maxTempC = session.maxTempC,
+            reachedFull = false,
             confidence = confidence,
             warnings = warnings
         )

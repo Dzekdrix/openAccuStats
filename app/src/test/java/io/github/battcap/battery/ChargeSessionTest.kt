@@ -156,6 +156,50 @@ class ChargeSessionTest {
     }
 
     @Test
+    fun trickleChargeAfter100PctIsCounted() {
+        // Après 100 %, le chargeur continue à courant constant : cette charge doit être comptée
+        // jusqu'au dernier échantillon, même si le niveau entier ne bouge plus. Le compteur de
+        // la jauge, lui, sature à la capacité nominale dès 100 % (comportement réel le plus
+        // courant) : seule l'intégration du courant peut voir cette charge supplémentaire.
+        val capacityMah = 4000.0
+        val currentMa = 2000.0
+        val session = ChargeSession()
+        var t = 0.0
+        var inputMah = 0.2 * capacityMah // charge réellement entrée depuis le début, sans plafond
+        fun sample() {
+            val level = minOf(100, (inputMah / capacityMah * 100.0).toInt())
+            session.onSample(
+                BatterySample(
+                    tNanos = (t * 1e9).toLong(), levelPct = level, voltageMv = 3900,
+                    temperatureC = 30f, currentRaw = (currentMa * 1000).toInt(),
+                    chargeCounterUah = (minOf(inputMah, capacityMah) * 1000.0).toInt(),
+                    isCharging = true, plugged = 1
+                )
+            )
+        }
+        sample() // amorce à 20 % (pas encore ancré)
+        // Échantillons rapprochés (2 s) jusqu'à 100 %, pour ne pas déclencher la détection de trou.
+        while (inputMah < capacityMah) {
+            t += 2.0
+            inputMah += currentMa * 2.0 / 3600.0
+            sample()
+        }
+        val before = CapacityEstimator.estimate(session, null)!!
+        assertEquals(100, before.endLevel)
+
+        // Phase à tension constante : le niveau entier reste bloqué à 100 % et le compteur de
+        // la jauge aussi (saturé), mais le courant continue de circuler.
+        repeat(1000) {
+            t += 2.0
+            inputMah += currentMa * 2.0 / 3600.0
+            sample()
+        }
+        val after = CapacityEstimator.estimate(session, null)!!
+        assertEquals(100, after.endLevel)
+        assertTrue("la charge supplémentaire après 100 % doit être comptée", after.bestMah > before.bestMah)
+    }
+
+    @Test
     fun idleCalibrationInMilliampsIsCorrectedByCharge() {
         // Écran éteint, 8 mA en µA (8000) : pris à tort pour des mA, puis corrigé dès la charge
         val n = CurrentNormalizer()

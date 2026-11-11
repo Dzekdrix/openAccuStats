@@ -111,6 +111,29 @@ class ChargeSession(
         prev = s; prevCurrentUa = iUa
     }
 
+    /**
+     * Mesure finale, à lire au débranchement (ou à chaque échantillon pour l'affichage en direct).
+     *
+     * Avant 100 %, on s'en tient au dernier changement de niveau : la charge entrée depuis ce
+     * changement n'est pas attribuable à un niveau précis (erreur de quantification).
+     * À 100 %, le niveau ne bouge plus mais le chargeur continue à faible courant : cette charge
+     * est bien stockée dans la batterie, on la compte donc jusqu'au dernier échantillon.
+     */
+    fun finalSnapshot(): Snapshot? {
+        val snap = snapshot ?: return null
+        val last = prev ?: return snap
+        if (lastObservedLevel < 100) return snap
+        val cc0 = ccStart
+        val ccLast = last.chargeCounterUah
+        return snap.copy(
+            endLevel = 100,
+            chargeInMah = chargeUah / 1000.0,
+            energyInWh = energyUwh / 1e6,
+            chargeCounterDeltaMah = if (cc0 != null && ccLast != null) (ccLast - cc0) / 1000.0 else null,
+            durationS = (last.tNanos - anchorTimeNs) / 1e9
+        )
+    }
+
     private fun updateFullDetection(s: BatterySample, iUa: Long?) {
         if (s.isFull) { reachedFull = true; return }
         if (iUa == null) return
