@@ -8,6 +8,8 @@ Ajoutez vos changements sous **[Unreleased]** au fil du développement ;
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-11-11
+
 - L'application s'appelle désormais **openAccuStats** (anciennement BattCap), avec le nouvel
   identifiant `io.github.dzekdrix.openaccustats` : elle s'installe comme une nouvelle app, à côté
   de l'ancienne, sans reprendre son historique.

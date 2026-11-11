@@ -14,9 +14,9 @@ RepoType: git
 Repo: https://github.com/dzekdrix/openAccuStats.git
 
 Builds:
-  - versionName: 0.1.0
-    versionCode: 100
-    commit: v0.1.0
+  - versionName: 0.8.0
+    versionCode: 800
+    commit: v0.8.0
     subdir: app
     gradle:
       - yes
@@ -25,5 +25,5 @@ Builds:
 # dans app/build.gradle.kts et ajoute automatiquement le build correspondant.
 AutoUpdateMode: Version
 UpdateCheckMode: Tags
-CurrentVersion: 0.1.0
-CurrentVersionCode: 100
+CurrentVersion: 0.8.0
+CurrentVersionCode: 800

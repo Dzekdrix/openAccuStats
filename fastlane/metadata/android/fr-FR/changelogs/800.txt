@@ -1,0 +1,1 @@
+L'application devient openAccuStats (nouvel identifiant : elle s'installe à côté de l'ancienne BattCap). Outils de build mis à jour : Gradle 9.3.1, AGP 8.13.2, Kotlin 2.3.21, Room 2.8.5.
