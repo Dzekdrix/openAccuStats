@@ -25,8 +25,11 @@ et qui en sort (cycle de décharge). Interface en français (défaut) et anglais
 - Ne modifiez pas à la main versionName/versionCode.
 
 ## Build et tests
-- **JDK 17 obligatoire** (Gradle 8.11.1 ne supporte pas JDK 25 : erreur cryptique « 25 »).
-  Android Studio : Settings > Build > Gradle > Gradle JDK = 17 (jbr-17).
+- **JDK 17 à 25** pour lancer Gradle 9.3.1 (le code cible Java 17). Android Studio : Settings >
+  Build > Gradle > Gradle JDK.
+- Chaîne de build liée : Gradle ↔ AGP 8.13.x ↔ Kotlin ↔ KSP (KSP2 seul depuis Kotlin 2.3, d'où
+  Room ≥ 2.7). Vérifier les tableaux de compatibilité officiels avant toute montée de version.
+  AGP 9 intègre Kotlin (retrait du plugin `kotlin-android`) : migration à part.
 - `./gradlew clean test` (tests unitaires JVM, sans appareil), `./gradlew assembleDebug`.
 - Room : `exportSchema = true`, schémas dans `app/schemas/` — les versionner.
 

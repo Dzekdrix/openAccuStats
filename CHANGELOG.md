@@ -8,6 +8,9 @@ Ajoutez vos changements sous **[Unreleased]** au fil du développement ;
 
 ## [Unreleased]
 
+- Outils de build mis à jour : Gradle 9.3.1, Android Gradle Plugin 8.13.2, Kotlin 2.3.21,
+  KSP 2.3.12 et Room 2.8.5 (compatible KSP2). Le build accepte désormais un JDK de 17 à 25.
+
 ## [0.7.0] - 2026-11-11
 
 - Le suivi tourne désormais en continu dès qu'il est activé, charge comme décharge, plutôt que
