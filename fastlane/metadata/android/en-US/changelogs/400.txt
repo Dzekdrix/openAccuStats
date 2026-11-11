@@ -1,0 +1,1 @@
+The notification now only appears while charging (if the app is exempt from battery optimization).

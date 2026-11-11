@@ -1,0 +1,1 @@
+La notification n'apparaît plus que pendant la charge (si l'app est exemptée de l'optimisation de batterie).

@@ -8,6 +8,8 @@ Ajoutez vos changements sous **[Unreleased]** au fil du développement ;
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-11
+
 - Plus de notification pendant l'attente d'une charge : la notification n'apparaît
   que pendant la charge (nécessite d'exempter l'app de l'optimisation de batterie ;
   sinon une notification d'attente minimale, sans icône, reste affichée).
