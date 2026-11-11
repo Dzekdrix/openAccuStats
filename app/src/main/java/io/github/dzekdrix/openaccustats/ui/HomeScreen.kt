@@ -159,7 +159,7 @@ private fun EstimateCard(
 
         // Ce qui a réellement été mesuré pendant cette charge
         Metric(
-            stringResource(R.string.estimate_charge_in),
+            stringResource(R.string.history_charge_label),
             stringResource(R.string.estimate_charge_in_value, e.chargeInMah, e.startLevel, e.endLevel)
         )
         e.energyInWh?.let { Metric(stringResource(R.string.estimate_energy_in), stringResource(R.string.unit_wh, it)) }
@@ -206,7 +206,7 @@ private fun DischargeCard(e: CapacityEstimate?) = Card(Modifier.fillMaxWidth()) 
         HorizontalDivider(Modifier.padding(vertical = 6.dp))
 
         Metric(
-            stringResource(R.string.estimate_charge_in),
+            stringResource(R.string.history_discharged_label),
             stringResource(R.string.estimate_charge_in_value, e.chargeInMah, e.startLevel, e.endLevel)
         )
         Text(

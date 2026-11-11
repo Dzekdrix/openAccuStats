@@ -12,6 +12,8 @@ Ajoutez vos changements sous **[Unreleased]** au fil du développement ;
   branché, jusqu'à être bloquée par Android (erreur « schedule() called more than 250 times » dans
   le journal). Devenue inutile depuis le suivi continu, elle est supprimée ; la vérification
   périodique (15 min) suffit pour relancer le service s'il a été arrêté.
+- Accueil : « Charge entrée » devient « Charge stockée » pendant une charge et « Charge restituée »
+  pendant une décharge, comme dans l'historique.
 
 ## [0.8.0] - 2026-11-11
 
