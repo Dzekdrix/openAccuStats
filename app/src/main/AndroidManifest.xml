@@ -44,5 +44,16 @@
             android:name=".service.ChargeJobService"
             android:exported="false"
             android:permission="android.permission.BIND_JOB_SERVICE" />
+
+        <!-- Remet le suivi en place après un redémarrage ou une mise à jour de l'app.
+             exported=false : seul le système (et l'app) peut l'appeler. -->
+        <receiver
+            android:name=".service.RestartReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
     </application>
 </manifest>

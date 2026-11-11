@@ -41,6 +41,7 @@ fun SettingsScreen(vm: MainViewModel, padding: PaddingValues) {
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         DesignCard(vm.detectedDesignMah, manual, onSave = vm::setManualDesign)
+        DiagnosticCard()
         AboutCard()
     }
 }

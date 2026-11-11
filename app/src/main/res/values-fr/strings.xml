@@ -106,4 +106,23 @@
     <string name="history_period">%1$s - %2$s</string>
     <string name="history_ended_at">Terminée le %s</string>
     <string name="history_charge_label">Charge stockée :</string>
+    <string name="diag_title">Diagnostic du suivi</string>
+    <string name="diag_help">Indique pourquoi une charge n\'aurait pas été mesurée. Copiez-le pour le partager si besoin : il ne contient aucune donnée personnelle.</string>
+    <string name="diag_yes">oui</string>
+    <string name="diag_no">non</string>
+    <string name="diag_enabled">Suivi activé</string>
+    <string name="diag_exempt">Exemptée d\'optimisation de batterie</string>
+    <string name="diag_job_charging">Tâche « branchement » programmée</string>
+    <string name="diag_job_safety">Vérification périodique programmée</string>
+    <string name="diag_service">Service de mesure actif</string>
+    <string name="diag_bucket">Groupe de veille Android</string>
+    <string name="diag_bucket_active">actif</string>
+    <string name="diag_bucket_working">utilisée régulièrement</string>
+    <string name="diag_bucket_frequent">fréquente</string>
+    <string name="diag_bucket_rare">rare</string>
+    <string name="diag_bucket_restricted">restreinte</string>
+    <string name="diag_log_title">Journal des événements</string>
+    <string name="diag_log_empty">Aucun événement enregistré pour l\'instant.</string>
+    <string name="diag_copy">Copier</string>
+    <string name="diag_refresh">Actualiser</string>
 </resources>

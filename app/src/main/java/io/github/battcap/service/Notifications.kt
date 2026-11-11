@@ -64,6 +64,7 @@ object Notifications {
             .setContentText(context.getString(R.string.notif_missed))
             .setStyle(NotificationCompat.BigTextStyle().bigText(context.getString(R.string.notif_missed)))
             .setContentIntent(openApp(context))
+            .setOnlyAlertOnce(true) // la vérification périodique peut la reposter : une seule alerte
             .setAutoCancel(true)
             .build()
         context.getSystemService(NotificationManager::class.java).notify(ID_MISSED, n)

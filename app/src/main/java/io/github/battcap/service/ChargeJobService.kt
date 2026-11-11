@@ -2,35 +2,46 @@ package io.github.battcap.service
 
 import android.app.job.JobParameters
 import android.app.job.JobService
-import io.github.battcap.battery.BatteryReader
+import android.os.Build
+import io.github.battcap.data.DiagnosticLog
 
 /**
- * Exécutée par Android quand le téléphone commence à charger (contrainte « en charge »).
- * Se contente de lancer le service de mesure, puis se termine. Le service reprogramme
- * cette tâche quand la charge se termine.
+ * Tâches programmées du suivi (voir MonitoringController) :
+ *  - JOB_ID_CHARGING : exécutée par Android quand le téléphone commence à charger ;
+ *  - JOB_ID_SAFETY   : vérification toutes les 15 min, filet de sécurité.
+ * Les deux se contentent de lancer le service de mesure si une charge est en cours.
  */
 class ChargeJobService : JobService() {
 
-    override fun onStartJob(params: JobParameters?): Boolean {
+    override fun onStartJob(params: JobParameters): Boolean {
+        val isChargingJob = params.jobId == MonitoringController.JOB_ID_CHARGING
+        val name = if (isChargingJob) "Tâche « branchement »" else "Vérification périodique"
         if (!MonitoringController.isEnabled(this)) return false
-        // Juste après un débranchement, la contrainte « en charge » peut encore être vue comme
-        // remplie : on vérifie l'état réel pour ne pas lancer le service (et sa notification) pour rien.
-        val plugged = BatteryReader(this).read()?.let { it.plugged != 0 } ?: true
-        if (!plugged) {
-            MonitoringController.scheduleChargeJob(this)
-            return false
+
+        val plugged = MonitoringController.isPlugged(this) ?: true
+        val running = ChargeRepository.running.value
+        // Le journal ne garde la vérification périodique que si elle a quelque chose à faire
+        if (isChargingJob || (plugged && !running)) {
+            DiagnosticLog.log(this, "$name déclenchée (branché=$plugged, service actif=$running)")
         }
-        try {
-            MonitoringController.startService(this)
-        } catch (e: IllegalStateException) {
-            // Android 12+ : démarrage refusé (exemption d'optimisation de batterie retirée).
-            // ForegroundServiceStartNotAllowedException hérite d'IllegalStateException.
-            // Pas de reprogrammation ici (elle se redéclencherait aussitôt) : l'ouverture de
-            // l'app, proposée par la notification, remet le suivi en place.
-            Notifications.showMissed(this)
+
+        when {
+            running -> Unit
+            plugged -> {
+                if (!MonitoringController.startService(this)) Notifications.showMissed(this)
+            }
+            // Débranché. Pour la tâche « branchement » : la contrainte « en charge » peut encore
+            // paraître remplie juste après un débranchement. Dans tous les cas on (re)programme
+            // la tâche « branchement » pour la prochaine charge.
+            else -> MonitoringController.scheduleJobs(this)
         }
-        return false // travail terminé, pas besoin de garder la tâche active
+        return false // travail terminé
     }
 
-    override fun onStopJob(params: JobParameters?): Boolean = false
+    override fun onStopJob(params: JobParameters): Boolean {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            DiagnosticLog.log(this, "Tâche ${params.jobId} interrompue par Android (raison ${params.stopReason})")
+        }
+        return false
+    }
 }

@@ -20,6 +20,7 @@ import io.github.battcap.battery.ChargeSession
 import io.github.battcap.battery.CurrentNormalizer
 import io.github.battcap.data.AppDatabase
 import io.github.battcap.data.ChargeRecord
+import io.github.battcap.data.DiagnosticLog
 import io.github.battcap.data.Settings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -29,6 +30,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
+import kotlin.math.roundToInt
 
 /**
  * Service au premier plan qui échantillonne la batterie.
@@ -102,6 +104,7 @@ class ChargeMonitorService : Service() {
         }
         if (!started) {
             started = true
+            DiagnosticLog.log(this, "Service de mesure démarré (branché=$plugged)")
             ChargeRepository.setRunning(true)
             scope.launch { sampleLoop() }
             // Écran de l'app affiché : on réveille la boucle pour un affichage immédiat
@@ -137,7 +140,8 @@ class ChargeMonitorService : Service() {
         if (!plugged) {
             if (MonitoringController.canWaitSilently(this)) {
                 stopping = true
-                MonitoringController.scheduleChargeJob(this)
+                MonitoringController.scheduleJobs(this)
+                DiagnosticLog.log(this, "Débranché : arrêt du service, attente silencieuse du prochain branchement")
                 stopSelf()
                 return
             }
@@ -166,6 +170,7 @@ class ChargeMonitorService : Service() {
     private fun startSession() {
         session = ChargeSession(normalizer)
         sessionStartedAtMs = System.currentTimeMillis()
+        DiagnosticLog.log(this, "Charge détectée : début de la mesure")
         ChargeRepository.publishEstimate(null)
         updateNotification(getString(R.string.notif_charging), charging = true)
     }
@@ -184,9 +189,16 @@ class ChargeMonitorService : Service() {
 
         val est = CapacityEstimator.estimate(ended, settings.designMah)
         val outcome = when {
-            est == null -> SessionOutcome.NoMeasurement
+            est == null -> {
+                DiagnosticLog.log(this, "Fin de charge : aucune variation de niveau mesurée, rien d'enregistré")
+                SessionOutcome.NoMeasurement
+            }
             else -> {
                 save(est, ended.lastPlugged)
+                DiagnosticLog.log(
+                    this,
+                    "Fin de charge enregistrée : ${est.startLevel} % - ${est.endLevel} %, ${est.bestMah.roundToInt()} mAh"
+                )
                 SessionOutcome.Saved(est.bestMah, est.deltaSocPct, est.reachedFull)
             }
         }
@@ -221,6 +233,7 @@ class ChargeMonitorService : Service() {
     }
 
     override fun onDestroy() {
+        if (!stopping) DiagnosticLog.log(this, "Service arrêté")
         finishSession() // arrêt du suivi pendant une charge : la mesure en cours est conservée
         if (wakeLock.isHeld) wakeLock.release()
         unregisterReceiver(powerReceiver)

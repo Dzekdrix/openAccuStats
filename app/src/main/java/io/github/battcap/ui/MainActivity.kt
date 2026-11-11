@@ -24,7 +24,7 @@ class MainActivity : ComponentActivity() {
         super.onStart()
         ChargeRepository.setUiVisible(true)
         // App au premier plan : on peut (re)mettre en place le suivi en toute sécurité
-        MonitoringController.ensure(this)
+        MonitoringController.ensure(this, reason = "ouverture de l'app")
     }
 
     override fun onStop() {

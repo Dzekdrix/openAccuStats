@@ -108,4 +108,23 @@
     <string name="history_period">%1$s - %2$s</string>
     <string name="history_ended_at">Ended %s</string>
     <string name="history_charge_label">Charge stored:</string>
+    <string name="diag_title">Monitoring diagnostics</string>
+    <string name="diag_help">Shows why a charge may not have been measured. Copy it to share it if needed: it contains no personal data.</string>
+    <string name="diag_yes">yes</string>
+    <string name="diag_no">no</string>
+    <string name="diag_enabled">Monitoring enabled</string>
+    <string name="diag_exempt">Exempt from battery optimization</string>
+    <string name="diag_job_charging">\"Plug-in\" task scheduled</string>
+    <string name="diag_job_safety">Periodic check scheduled</string>
+    <string name="diag_service">Measurement service running</string>
+    <string name="diag_bucket">Android standby group</string>
+    <string name="diag_bucket_active">active</string>
+    <string name="diag_bucket_working">working set</string>
+    <string name="diag_bucket_frequent">frequent</string>
+    <string name="diag_bucket_rare">rare</string>
+    <string name="diag_bucket_restricted">restricted</string>
+    <string name="diag_log_title">Event log</string>
+    <string name="diag_log_empty">No event recorded yet.</string>
+    <string name="diag_copy">Copy</string>
+    <string name="diag_refresh">Refresh</string>
 </resources>

@@ -8,6 +8,11 @@ Ajoutez vos changements sous **[Unreleased]** au fil du développement ;
 
 ## [Unreleased]
 
+- Démarrage au branchement fiabilisé : vérification périodique de secours (15 min),
+  remise en place du suivi après un redémarrage ou une mise à jour de l'app.
+- Nouveau : diagnostic du suivi dans les Paramètres (état des tâches, exemption,
+  groupe de veille Android, journal des événements copiable).
+
 ## [0.5.0] - 2026-11-11
 
 - Nouveau : écran Historique dans le menu latéral (10 dernières charges, ou tout
