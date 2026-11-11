@@ -70,7 +70,6 @@
     <string name="nav_settings">Settings</string>
     <string name="nav_open_menu">Open menu</string>
     <string name="estimate_capacity_label">Estimated total capacity</string>
-    <string name="estimate_charge_in">Charge added</string>
     <string name="estimate_charge_in_value">%1$.0f mAh (%2$d %% → %3$d %%)</string>
     <string name="estimate_energy_in">Energy added</string>
     <string name="estimate_energy_total">Estimated total energy</string>
@@ -118,7 +117,6 @@
     <string name="diag_no">no</string>
     <string name="diag_enabled">Monitoring enabled</string>
     <string name="diag_exempt">Exempt from battery optimization</string>
-    <string name="diag_job_charging">\"Plug-in\" task scheduled</string>
     <string name="diag_job_safety">Periodic check scheduled</string>
     <string name="diag_service">Measurement service running</string>
     <string name="diag_bucket">Android standby group</string>

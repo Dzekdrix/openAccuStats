@@ -58,7 +58,6 @@ fun DiagnosticCard() {
 
             Metric(stringResource(R.string.diag_enabled), yn(status.enabled))
             Metric(stringResource(R.string.diag_exempt), yn(status.exempt))
-            Metric(stringResource(R.string.diag_job_charging), yn(status.chargingJobPending))
             Metric(stringResource(R.string.diag_job_safety), yn(status.safetyJobPending))
             Metric(stringResource(R.string.diag_service), yn(status.serviceRunning))
             status.standbyBucket?.let { Metric(stringResource(R.string.diag_bucket), stringResource(bucketLabel(it))) }
@@ -106,7 +105,6 @@ private fun fullReport(
     appendLine("openAccuStats ${BuildConfig.VERSION_NAME} — ${s.device}")
     appendLine("${context.getString(R.string.diag_enabled)} : ${yn(s.enabled)}")
     appendLine("${context.getString(R.string.diag_exempt)} : ${yn(s.exempt)}")
-    appendLine("${context.getString(R.string.diag_job_charging)} : ${yn(s.chargingJobPending)}")
     appendLine("${context.getString(R.string.diag_job_safety)} : ${yn(s.safetyJobPending)}")
     appendLine("${context.getString(R.string.diag_service)} : ${yn(s.serviceRunning)}")
     s.standbyBucket?.let { appendLine("${context.getString(R.string.diag_bucket)} : ${context.getString(bucketLabel(it))} ($it)") }

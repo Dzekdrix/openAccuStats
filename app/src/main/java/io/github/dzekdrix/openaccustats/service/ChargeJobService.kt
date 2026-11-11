@@ -6,32 +6,25 @@ import android.os.Build
 import io.github.dzekdrix.openaccustats.data.DiagnosticLog
 
 /**
- * Tâches programmées du suivi (voir MonitoringController) :
- *  - JOB_ID_CHARGING : exécutée par Android quand le téléphone commence à charger ;
- *  - JOB_ID_SAFETY   : vérification toutes les 15 min, filet de sécurité général.
- * Le service devant tourner en continu, les deux se contentent de le relancer s'il ne tourne
- * pas (il a pu être tué par Android), que le téléphone soit en charge ou non.
+ * Vérification périodique (toutes les 15 min, voir MonitoringController) : le service devant
+ * tourner en continu, elle se contente de le relancer s'il ne tourne pas (il a pu être tué
+ * par Android), que le téléphone soit en charge ou non.
  */
 class ChargeJobService : JobService() {
 
     override fun onStartJob(params: JobParameters): Boolean {
-        val isChargingJob = params.jobId == MonitoringController.JOB_ID_CHARGING
-        val name = if (isChargingJob) "Tâche « branchement »" else "Vérification périodique"
-        if (!MonitoringController.isEnabled(this)) return false
+        try {
+            if (params.jobId != MonitoringController.JOB_ID_SAFETY) return false // ancienne tâche
+            if (!MonitoringController.isEnabled(this)) return false
+            if (ChargeRepository.running.value) return false // rien à faire : pas de ligne au journal
 
-        val running = ChargeRepository.running.value
-        // Le journal ne garde la vérification périodique que si elle a quelque chose à faire
-        if (isChargingJob || !running) {
-            DiagnosticLog.log(this, "$name déclenchée (service actif=$running)")
+            DiagnosticLog.log(this, "Vérification périodique : service arrêté, relance")
+            if (!MonitoringController.startService(this)) {
+                Notifications.showMissed(this)
+            }
+        } catch (t: Throwable) {
+            DiagnosticLog.logError(this, "ChargeJobService.onStartJob", t)
         }
-        // Le service doit tourner en continu : s'il ne tourne pas, on le relance,
-        // qu'une charge soit en cours ou non.
-        if (!running && !MonitoringController.startService(this)) {
-            Notifications.showMissed(this)
-        }
-        // La tâche « branchement » n'est pas persistante au-delà de son déclenchement :
-        // on la reprogramme pour la prochaine charge.
-        if (isChargingJob) MonitoringController.scheduleJobs(this)
         return false // travail terminé
     }
 

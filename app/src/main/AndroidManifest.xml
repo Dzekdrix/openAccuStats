@@ -39,7 +39,7 @@
                 android:value="Continuous sampling of battery current during charging to estimate battery capacity" />
         </service>
 
-        <!-- Réveille l'app au branchement du chargeur pour lancer la mesure -->
+        <!-- Vérification périodique : relance le service de mesure s'il a été arrêté -->
         <service
             android:name=".service.ChargeJobService"
             android:exported="false"

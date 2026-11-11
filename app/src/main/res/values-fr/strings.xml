@@ -68,7 +68,6 @@
     <string name="nav_settings">Paramètres</string>
     <string name="nav_open_menu">Ouvrir le menu</string>
     <string name="estimate_capacity_label">Capacité totale estimée</string>
-    <string name="estimate_charge_in">Charge entrée</string>
     <string name="estimate_charge_in_value">%1$.0f mAh (%2$d %% → %3$d %%)</string>
     <string name="estimate_energy_in">Énergie entrée</string>
     <string name="estimate_energy_total">Énergie totale estimée</string>
@@ -116,7 +115,6 @@
     <string name="diag_no">non</string>
     <string name="diag_enabled">Suivi activé</string>
     <string name="diag_exempt">Exemptée d\'optimisation de batterie</string>
-    <string name="diag_job_charging">Tâche « branchement » programmée</string>
     <string name="diag_job_safety">Vérification périodique programmée</string>
     <string name="diag_service">Service de mesure actif</string>
     <string name="diag_bucket">Groupe de veille Android</string>

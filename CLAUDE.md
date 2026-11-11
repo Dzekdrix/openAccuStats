@@ -48,7 +48,8 @@ et qui en sort (cycle de décharge). Interface en français (défaut) et anglais
   `Settings`, `DiagnosticLog` (journal copiable ; `logError` pour les erreurs).
 - `service/` — `ChargeMonitorService` (service premier plan **continu** tant que le suivi est
   activé, charge et décharge), `MonitoringController` (démarrage/relance, JobScheduler),
-  `ChargeJobService` (tâche « en charge » + vérification périodique 15 min), `RestartReceiver`
+  `ChargeJobService` (vérification périodique 15 min ; l'ancienne tâche « branchement » a été
+  supprimée car elle bouclait), `RestartReceiver`
   (BOOT_COMPLETED / MY_PACKAGE_REPLACED), `ChargeRepository` (StateFlow partagés service ↔ UI).
 - `ui/` — Compose : `AppRoot` (menu latéral), `HomeScreen`, `HistoryScreen`, `StatsScreen`,
   `SettingsScreen`, `MainViewModel`.

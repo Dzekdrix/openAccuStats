@@ -25,9 +25,8 @@ import kotlinx.coroutines.flow.asStateFlow
  *
  * S'il est arrêté de force (Android tue le processus, surcouche constructeur agressive…),
  * plusieurs mécanismes le relancent, du plus rapide au plus robuste :
- *  1. tâche JobScheduler « en charge » : se déclenche au prochain branchement ;
- *  2. vérification périodique (toutes les 15 min) : filet de sécurité général ;
- *  3. récepteur BOOT_COMPLETED / MY_PACKAGE_REPLACED : remet tout en place après un
+ *  1. vérification périodique JobScheduler (toutes les 15 min) ;
+ *  2. récepteur BOOT_COMPLETED / MY_PACKAGE_REPLACED : remet tout en place après un
  *     redémarrage ou une mise à jour de l'app (qui peut annuler les tâches programmées).
  *
  * Contrainte d'Android 12+ : un service au premier plan ne peut démarrer depuis l'arrière-plan
@@ -38,7 +37,8 @@ import kotlinx.coroutines.flow.asStateFlow
  */
 object MonitoringController {
 
-    const val JOB_ID_CHARGING = 4201
+    /** Ancienne tâche « branchement » (≤ 0.8.0), retirée : annulée si elle est encore programmée. */
+    private const val LEGACY_JOB_ID_CHARGING = 4201
     const val JOB_ID_SAFETY = 4202
     private const val SAFETY_PERIOD_MS = 15 * 60 * 1000L // minimum autorisé par Android
 
@@ -103,18 +103,15 @@ object MonitoringController {
         false
     }
 
-    /** Programme (ou reprogramme) les deux tâches. Persistantes : elles survivent au redémarrage. */
+    /** Programme la vérification périodique. Persistante : elle survit au redémarrage. */
     fun scheduleJobs(context: Context) {
         try {
             val scheduler = context.getSystemService(JobScheduler::class.java)
             val component = ComponentName(context, ChargeJobService::class.java)
 
-            val charging = JobInfo.Builder(JOB_ID_CHARGING, component)
-                .setRequiresCharging(true)
-                .setPersisted(true)
-                .build()
-            if (scheduler.schedule(charging) != JobScheduler.RESULT_SUCCESS) {
-                DiagnosticLog.log(context, "ÉCHEC de la programmation de la tâche « branchement »")
+            // Ancienne tâche « branchement » : elle se reprogrammait en boucle tant que le téléphone restait branché
+            if (scheduler.getPendingJob(LEGACY_JOB_ID_CHARGING) != null) {
+                scheduler.cancel(LEGACY_JOB_ID_CHARGING)
             }
 
             // Ne pas reprogrammer la tâche périodique si elle existe déjà : cela remettrait son délai à zéro
@@ -134,7 +131,7 @@ object MonitoringController {
 
     fun cancelJobs(context: Context) {
         val scheduler = context.getSystemService(JobScheduler::class.java)
-        scheduler.cancel(JOB_ID_CHARGING)
+        scheduler.cancel(LEGACY_JOB_ID_CHARGING)
         scheduler.cancel(JOB_ID_SAFETY)
     }
 
@@ -143,7 +140,6 @@ object MonitoringController {
     data class Status(
         val enabled: Boolean,
         val exempt: Boolean,
-        val chargingJobPending: Boolean,
         val safetyJobPending: Boolean,
         val serviceRunning: Boolean,
         val standbyBucket: Int?,     // UsageStatsManager.STANDBY_BUCKET_*, null avant Android 9
@@ -155,7 +151,6 @@ object MonitoringController {
         return Status(
             enabled = isEnabled(context),
             exempt = canWaitSilently(context),
-            chargingJobPending = scheduler.getPendingJob(JOB_ID_CHARGING) != null,
             safetyJobPending = scheduler.getPendingJob(JOB_ID_SAFETY) != null,
             serviceRunning = ChargeRepository.running.value,
             standbyBucket = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)

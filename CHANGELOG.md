@@ -8,6 +8,11 @@ Ajoutez vos changements sous **[Unreleased]** au fil du développement ;
 
 ## [Unreleased]
 
+- Correction : la tâche « branchement » se reprogrammait en boucle tant que le téléphone restait
+  branché, jusqu'à être bloquée par Android (erreur « schedule() called more than 250 times » dans
+  le journal). Devenue inutile depuis le suivi continu, elle est supprimée ; la vérification
+  périodique (15 min) suffit pour relancer le service s'il a été arrêté.
+
 ## [0.8.0] - 2026-11-11
 
 - L'application s'appelle désormais **openAccuStats** (anciennement BattCap), avec le nouvel
