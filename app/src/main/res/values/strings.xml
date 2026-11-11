@@ -46,8 +46,6 @@
     <string name="btn_save">Save</string>
     <string name="btn_clear">Clear</string>
 
-    <string name="history_title">History</string>
-    <string name="history_average">Average of reliable measurements: %.0f mAh</string>
     <string name="history_empty">No completed charge yet.</string>
     <string name="history_no_reliable" formatted="false">No reliable measurement yet: a charge of at least 30 % is needed to be included in the average.</string>
     <string name="history_item">%1$d %% → %2$d %% · confidence %3$s</string>
@@ -58,7 +56,6 @@
     <string name="estimate_full">End of charge reached</string>
     <string name="history_full">Charged to the end</string>
     <string name="outcome_saved">Last charge saved: %1$.0f mAh over %2$d %%.</string>
-    <string name="outcome_too_short">Last charge not saved: only %1$d %% measured (minimum %2$d %%).</string>
     <string name="outcome_none">Last charge not saved: no level change could be measured.</string>
     <string name="battopt_title">Battery optimization is on</string>
     <string name="battopt_text">Exempting BattCap lets it wait for a charge with no notification and keeps Android from stopping the measurement. It only uses the battery significantly while plugged in.</string>
@@ -89,14 +86,21 @@
     <string name="stats_empty">No charge recorded yet. Charges appear here once you unplug the phone.</string>
     <string name="stats_chart_description">Chart of %d estimated capacity measurements over time</string>
     <string name="stats_tap_hint">Tap a point to see its details.</string>
-    <string name="stats_legend_reliable">Reliable measurement</string>
-    <string name="stats_legend_low">Low-confidence measurement</string>
+    <string name="stats_legend_reliable">Counted in the average</string>
+    <string name="stats_legend_low">Partial charge</string>
     <string name="stats_legend_design">Design capacity</string>
     <string name="stats_count">Recorded charges</string>
-    <string name="stats_average">Average (reliable measurements)</string>
+    <string name="stats_average">Weighted average</string>
     <string name="stats_health">Average health</string>
     <string name="notif_channel_waiting">Waiting for a charge</string>
     <string name="notif_channel_alerts">Alerts</string>
     <string name="notif_waiting_min">Waiting for a charge. Exempt BattCap from battery optimization to hide this notification.</string>
     <string name="notif_missed">A charge started but Android did not allow the measurement to start. Open BattCap to measure it.</string>
+    <string name="nav_history">History</string>
+    <string name="history_recent">Last %d</string>
+    <string name="history_all">All (%d)</string>
+    <string name="history_average_title">Average capacity</string>
+    <string name="history_average_help">Weighted by the level gained: only charges of at least %d %% count, and a 50 %% charge weighs half as much as a 100 %% charge.</string>
+    <string name="history_partial_tag">Partial</string>
+    <string name="history_partial_note">Not counted in the average (less than %d %%)</string>
 </resources>

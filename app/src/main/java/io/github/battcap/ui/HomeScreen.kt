@@ -13,11 +13,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -25,13 +23,11 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -43,11 +39,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.battcap.R
 import io.github.battcap.battery.BatterySample
 import io.github.battcap.battery.CapacityEstimate
-import io.github.battcap.data.ChargeRecord
-import io.github.battcap.service.ChargeMonitorService
 import io.github.battcap.service.SessionOutcome
 
-/** Accueil : mesures en direct, charge en cours et historique. */
+/** Accueil : mesures en direct et charge en cours. */
 @Composable
 fun HomeScreen(vm: MainViewModel, padding: PaddingValues) {
     val running by vm.running.collectAsStateWithLifecycle()
@@ -55,7 +49,6 @@ fun HomeScreen(vm: MainViewModel, padding: PaddingValues) {
     val currentMa by vm.currentMa.collectAsStateWithLifecycle()
     val estimate by vm.estimate.collectAsStateWithLifecycle()
     val outcome by vm.lastOutcome.collectAsStateWithLifecycle()
-    val history by vm.history.collectAsStateWithLifecycle()
 
     val context = LocalContext.current
     // La notification est facultative : le service démarre même si la permission est refusée.
@@ -84,23 +77,6 @@ fun HomeScreen(vm: MainViewModel, padding: PaddingValues) {
         }
         item { BatteryOptimizationCard() }
         item { EstimateCard(estimate, outcome, running, sample?.isCharging == true) }
-        item {
-            Text(
-                stringResource(R.string.history_title),
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(top = 8.dp)
-            )
-            val avg = MainViewModel.reliableAverage(history)
-            Text(
-                when {
-                    avg != null -> stringResource(R.string.history_average, avg)
-                    history.isNotEmpty() -> stringResource(R.string.history_no_reliable)
-                    else -> stringResource(R.string.history_empty)
-                },
-                style = MaterialTheme.typography.bodyMedium
-            )
-        }
-        items(history, key = { it.id }) { RecordRow(it, onDelete = { vm.delete(it) }) }
     }
 }
 
@@ -150,10 +126,6 @@ private fun EstimateCard(
                     when (outcome) {
                         is SessionOutcome.Saved ->
                             stringResource(R.string.outcome_saved, outcome.mah, outcome.deltaSocPct)
-                        is SessionOutcome.TooShort -> stringResource(
-                            R.string.outcome_too_short, outcome.deltaSocPct,
-                            ChargeMonitorService.MIN_SAVED_DELTA_SOC
-                        )
                         SessionOutcome.NoMeasurement -> stringResource(R.string.outcome_none)
                     },
                     style = MaterialTheme.typography.bodySmall,
@@ -202,34 +174,6 @@ private fun EstimateCard(
                 "⚠ " + stringResource(it.label()), color = MaterialTheme.colorScheme.error,
                 style = MaterialTheme.typography.bodySmall
             )
-        }
-    }
-}
-
-@Composable
-private fun RecordRow(r: ChargeRecord, onDelete: () -> Unit) {
-    val context = LocalContext.current
-    Card(Modifier.fillMaxWidth()) {
-        Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-            Column(Modifier.weight(1f)) {
-                Text(stringResource(R.string.unit_mah, r.bestMah), fontWeight = FontWeight.Bold)
-                Text(
-                    stringResource(
-                        R.string.history_item, r.startLevel, r.endLevel,
-                        stringResource(confidenceOf(r.confidence).label())
-                    ),
-                    style = MaterialTheme.typography.bodySmall
-                )
-                if (r.reachedFull) {
-                    Text(
-                        "✓ " + stringResource(R.string.history_full),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-                Text(formatDateTime(context, r.endedAtEpochMs), style = MaterialTheme.typography.bodySmall)
-            }
-            TextButton(onClick = onDelete) { Text(stringResource(R.string.btn_delete)) }
         }
     }
 }

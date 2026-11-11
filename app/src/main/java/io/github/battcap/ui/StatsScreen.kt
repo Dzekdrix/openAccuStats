@@ -28,7 +28,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.battcap.R
-import io.github.battcap.battery.Confidence
+import io.github.battcap.data.isPartial
 import io.github.battcap.ui.chart.CapacityChart
 import io.github.battcap.ui.chart.ChartPoint
 
@@ -55,7 +55,7 @@ fun StatsScreen(vm: MainViewModel, padding: PaddingValues) {
 
                 val points = remember(history) {
                     history.map {
-                        ChartPoint(it.endedAtEpochMs, it.bestMah, confidenceOf(it.confidence) != Confidence.LOW, it.id)
+                        ChartPoint(it.endedAtEpochMs, it.bestMah, reliable = !it.isPartial, id = it.id)
                     }
                 }
                 var selectedId by rememberSaveable { mutableStateOf<Long?>(null) }
@@ -92,7 +92,7 @@ fun StatsScreen(vm: MainViewModel, padding: PaddingValues) {
             }
         }
 
-        if (history.isNotEmpty()) SummaryCard(history.size, MainViewModel.reliableAverage(history), designMah)
+        if (history.isNotEmpty()) SummaryCard(history.size, MainViewModel.weightedAverage(history), designMah)
     }
 }
 

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Settings
@@ -41,6 +42,7 @@ import kotlinx.coroutines.launch
 /** Les écrans, dans l'ordre du menu latéral. */
 enum class Screen(@StringRes val title: Int) {
     HOME(R.string.nav_home),
+    HISTORY(R.string.nav_history),
     STATS(R.string.nav_stats),
     SETTINGS(R.string.nav_settings)
 }
@@ -48,6 +50,7 @@ enum class Screen(@StringRes val title: Int) {
 @Composable
 private fun Screen.icon(): Painter = when (this) {
     Screen.HOME -> rememberVectorPainter(Icons.Filled.Home)
+    Screen.HISTORY -> rememberVectorPainter(Icons.AutoMirrored.Filled.List)
     Screen.STATS -> painterResource(R.drawable.ic_chart)
     Screen.SETTINGS -> rememberVectorPainter(Icons.Filled.Settings)
 }
@@ -108,6 +111,7 @@ fun AppRoot(vm: MainViewModel = viewModel()) {
         ) { padding ->
             when (screen) {
                 Screen.HOME -> HomeScreen(vm, padding)
+                Screen.HISTORY -> HistoryScreen(vm, padding)
                 Screen.STATS -> StatsScreen(vm, padding)
                 Screen.SETTINGS -> SettingsScreen(vm, padding)
             }

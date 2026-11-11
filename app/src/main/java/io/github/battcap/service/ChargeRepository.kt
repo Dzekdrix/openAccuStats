@@ -9,7 +9,6 @@ import kotlinx.coroutines.flow.asStateFlow
 /** Ce qu'il est advenu de la dernière charge, pour expliquer à l'utilisateur pourquoi elle est (ou non) dans l'historique. */
 sealed interface SessionOutcome {
     data class Saved(val mah: Double, val deltaSocPct: Int, val reachedFull: Boolean) : SessionOutcome
-    data class TooShort(val deltaSocPct: Int) : SessionOutcome
     data object NoMeasurement : SessionOutcome
 }
 

@@ -183,7 +183,6 @@ class ChargeMonitorService : Service() {
         val est = CapacityEstimator.estimate(ended, settings.designMah)
         val outcome = when {
             est == null -> SessionOutcome.NoMeasurement
-            est.deltaSocPct < MIN_SAVED_DELTA_SOC -> SessionOutcome.TooShort(est.deltaSocPct)
             else -> {
                 save(est, ended.lastPlugged)
                 SessionOutcome.Saved(est.bestMah, est.deltaSocPct, est.reachedFull)
@@ -231,8 +230,6 @@ class ChargeMonitorService : Service() {
 
     companion object {
         const val ACTION_STOP = "io.github.battcap.STOP"
-        /** Une charge de moins de 5 % n'est pas enregistrée (et en dessous de 30 % elle est exclue de la moyenne). */
-        const val MIN_SAVED_DELTA_SOC = 5
         private const val WAKE_TIMEOUT_MS = 10 * 60 * 1000L
         private val ioScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     }

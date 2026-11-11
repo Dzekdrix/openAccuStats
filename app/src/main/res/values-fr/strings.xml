@@ -44,8 +44,6 @@
     <string name="btn_save">Enregistrer</string>
     <string name="btn_clear">Effacer</string>
 
-    <string name="history_title">Historique</string>
-    <string name="history_average">Moyenne des mesures fiables : %.0f mAh</string>
     <string name="history_empty">Aucune charge terminée pour l\'instant.</string>
     <string name="history_no_reliable" formatted="false">Pas encore de mesure fiable : une charge d\'au moins 30 % est nécessaire pour entrer dans la moyenne.</string>
     <string name="history_item">%1$d %% → %2$d %% · confiance %3$s</string>
@@ -56,7 +54,6 @@
     <string name="estimate_full">Fin de charge atteinte</string>
     <string name="history_full">Charge menée jusqu\'au bout</string>
     <string name="outcome_saved">Dernière charge enregistrée : %1$.0f mAh sur %2$d %%.</string>
-    <string name="outcome_too_short">Dernière charge non enregistrée : seulement %1$d %% mesurés (minimum %2$d %%).</string>
     <string name="outcome_none">Dernière charge non enregistrée : aucun changement de niveau n\'a pu être mesuré.</string>
     <string name="battopt_title">Optimisation de batterie active</string>
     <string name="battopt_text">Exempter BattCap lui permet d\'attendre une charge sans aucune notification et évite qu\'Android interrompe la mesure. L\'app ne consomme vraiment que lorsque le téléphone est branché.</string>
@@ -87,14 +84,21 @@
     <string name="stats_empty">Aucune charge enregistrée pour l\'instant. Les charges apparaissent ici une fois le téléphone débranché.</string>
     <string name="stats_chart_description">Courbe de %d mesures de capacité estimée au fil du temps</string>
     <string name="stats_tap_hint">Touchez un point pour voir son détail.</string>
-    <string name="stats_legend_reliable">Mesure fiable</string>
-    <string name="stats_legend_low">Mesure peu fiable</string>
+    <string name="stats_legend_reliable">Comptée dans la moyenne</string>
+    <string name="stats_legend_low">Charge partielle</string>
     <string name="stats_legend_design">Capacité nominale</string>
     <string name="stats_count">Charges enregistrées</string>
-    <string name="stats_average">Moyenne (mesures fiables)</string>
+    <string name="stats_average">Moyenne pondérée</string>
     <string name="stats_health">Santé moyenne</string>
     <string name="notif_channel_waiting">Attente d\'une charge</string>
     <string name="notif_channel_alerts">Alertes</string>
     <string name="notif_waiting_min">En attente d\'une charge. Exemptez BattCap de l\'optimisation de batterie pour masquer cette notification.</string>
     <string name="notif_missed">Une charge a commencé mais Android n\'a pas autorisé le lancement de la mesure. Ouvrez BattCap pour la mesurer.</string>
+    <string name="nav_history">Historique</string>
+    <string name="history_recent">%d dernières</string>
+    <string name="history_all">Tout (%d)</string>
+    <string name="history_average_title">Capacité moyenne</string>
+    <string name="history_average_help">Pondérée par le niveau gagné : seules les charges d\'au moins %d %% comptent, et une charge de 50 %% pèse deux fois moins qu\'une charge de 100 %%.</string>
+    <string name="history_partial_tag">Partielle</string>
+    <string name="history_partial_note">Non comptée dans la moyenne (moins de %d %%)</string>
 </resources>

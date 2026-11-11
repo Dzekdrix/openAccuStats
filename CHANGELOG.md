@@ -8,6 +8,13 @@ Ajoutez vos changements sous **[Unreleased]** au fil du développement ;
 
 ## [Unreleased]
 
+- Nouveau : écran Historique dans le menu latéral (10 dernières charges, ou tout
+  l'historique via un bouton segmenté) ; l'historique quitte l'Accueil.
+- Toutes les charges sont enregistrées, même très courtes ; les charges de moins
+  de 30 % sont marquées « Partielle » et affichées en carte à contour.
+- La capacité moyenne est pondérée par le niveau gagné (une charge de 50 % pèse
+  deux fois moins qu'une charge de 100 %) et n'inclut que les charges d'au moins 30 %.
+
 ## [0.4.0] - 2026-11-11
 
 - Plus de notification pendant l'attente d'une charge : la notification n'apparaît

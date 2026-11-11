@@ -13,6 +13,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import io.github.battcap.battery.CapacityAverage
 import kotlinx.coroutines.flow.Flow
 
 /** Une charge terminée, conservée pour calculer une moyenne sur plusieurs mesures. */
@@ -33,6 +34,12 @@ data class ChargeRecord(
     /** Charge menée jusqu'au bout (statut FULL ou chute du courant à 100 %). Ajouté en v2. */
     @ColumnInfo(defaultValue = "0") val reachedFull: Boolean = false
 )
+
+// Propriétés calculées en extensions : Room ne les confond pas avec des colonnes.
+val ChargeRecord.deltaSocPct get() = endLevel - startLevel
+
+/** Charge trop courte pour entrer dans la moyenne (affichée différemment). */
+val ChargeRecord.isPartial get() = CapacityAverage.isPartial(deltaSocPct)
 
 @Dao
 interface ChargeRecordDao {

@@ -4,11 +4,12 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.battcap.battery.BatteryReader
-import io.github.battcap.battery.Confidence
+import io.github.battcap.battery.CapacityAverage
 import io.github.battcap.battery.CurrentNormalizer
 import io.github.battcap.data.AppDatabase
 import io.github.battcap.data.ChargeRecord
 import io.github.battcap.data.Settings
+import io.github.battcap.data.deltaSocPct
 import io.github.battcap.service.ChargeRepository
 import io.github.battcap.service.MonitoringController
 import kotlinx.coroutines.delay
@@ -75,11 +76,8 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     fun delete(record: ChargeRecord) = viewModelScope.launch { dao.delete(record) }
 
     companion object {
-        /** Moyenne des mesures fiables (confiance moyenne ou haute), null s'il n'y en a pas. */
-        fun reliableAverage(records: List<ChargeRecord>): Double? =
-            records.filter { it.confidence != Confidence.LOW.name }
-                .map { it.bestMah }
-                .takeIf { it.isNotEmpty() }
-                ?.average()
+        /** Moyenne pondérée par la variation de niveau, charges partielles exclues (voir CapacityAverage). */
+        fun weightedAverage(records: List<ChargeRecord>): Double? =
+            CapacityAverage.weighted(records.map { it.bestMah to it.deltaSocPct })
     }
 }
