@@ -1,0 +1,14 @@
+BattCap estimates the real capacity of your phone's Li-ion battery by measuring the charge that flows into it while charging.
+
+<b>How it works</b>
+<ul>
+<li>Integrates the charging current (coulomb counting) every 2 seconds</li>
+<li>Cross-checks with the fuel gauge charge counter when the device exposes it</li>
+<li>Aligns the measurement on level changes to avoid percentage rounding errors</li>
+<li>Stored energy in Wh and health relative to design capacity</li>
+<li>Charge history and average of reliable measurements</li>
+</ul>
+
+For a reliable result, charge at least 30 % in one go (ideally 50 % or more).
+
+No network access, no ads, no tracking. Free software under the GPLv3 licence.

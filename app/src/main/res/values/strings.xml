@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name" translatable="false">BattCap</string>
+
+    <string name="notif_channel">Charge monitoring</string>
+    <string name="notif_waiting">Waiting for a charge</string>
+    <string name="notif_charging">Charging: measuring…</string>
+    <string name="notif_estimate">≈ %1$.0f mAh over %2$d %% of charge</string>
+    <string name="action_stop">Stop</string>
+
+    <string name="live_title">Battery now</string>
+    <string name="live_no_data">Start monitoring to see live readings.</string>
+    <string name="status_charging">Charging</string>
+    <string name="status_not_charging">Not charging</string>
+    <string name="live_level">Level</string>
+    <string name="live_current">Current</string>
+    <string name="live_voltage">Voltage</string>
+    <string name="live_temp">Temperature</string>
+    <string name="calibrating">calibrating…</string>
+    <string name="unit_ma">%.0f mA</string>
+    <string name="unit_mah">%.0f mAh</string>
+    <string name="unit_v">%.3f V</string>
+    <string name="unit_c">%.1f °C</string>
+
+    <string name="btn_start">Start monitoring</string>
+    <string name="btn_stop">Stop monitoring</string>
+
+    <string name="estimate_title">Current charge</string>
+    <string name="hint_start" formatted="false">Start monitoring, then plug in your phone. A charge covering at least 30 % (ideally 50 % or more) gives a reliable result.</string>
+    <string name="estimate_waiting">Measuring… the first estimate appears after two level increments.</string>
+    <string name="estimate_window">Window: %1$d %% → %2$d %%</string>
+    <string name="estimate_confidence">Confidence: %s</string>
+    <string name="estimate_health">Health: %.0f %% of design capacity</string>
+    <string name="estimate_energy">Stored energy: %1$.2f Wh (mean %2$.2f V)</string>
+    <string name="estimate_methods">Current integration: %1$s · Charge counter: %2$s</string>
+    <string name="confidence_low">low</string>
+    <string name="confidence_medium">medium</string>
+    <string name="confidence_high">high</string>
+
+    <string name="warn_short_window">Short charge window: low accuracy.</string>
+    <string name="warn_gaps">Measurement was interrupted.</string>
+    <string name="warn_hot">High temperature during the charge (above 40 °C).</string>
+    <string name="warn_disagree">The two measurement methods differ by more than 10 %.</string>
+    <string name="warn_above_design">Result well above design capacity: this device reports suspicious values.</string>
+
+    <string name="design_title">Design capacity</string>
+    <string name="design_detected">Detected: %.0f mAh</string>
+    <string name="design_not_detected">Not detected on this device</string>
+    <string name="design_manual_label">Manual value (mAh)</string>
+    <string name="btn_save">Save</string>
+    <string name="btn_clear">Clear</string>
+
+    <string name="history_title">History</string>
+    <string name="history_average">Average of reliable measurements: %.0f mAh</string>
+    <string name="history_empty">No completed charge yet.</string>
+    <string name="history_item">%1$d %% → %2$d %% · confidence %3$s</string>
+    <string name="btn_delete">Delete</string>
+
+    <string name="version_label">Version %s</string>
+</resources>

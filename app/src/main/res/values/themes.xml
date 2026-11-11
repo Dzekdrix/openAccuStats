@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Thème de fenêtre minimal : les couleurs réelles viennent de Compose (Material 3). -->
+    <style name="Theme.BattCap" parent="android:Theme.Material.Light.NoActionBar" />
+    <color name="ic_launcher_background">#1B5E20</color>
+</resources>

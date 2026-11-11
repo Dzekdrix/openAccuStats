@@ -1,0 +1,1 @@
+Première version : estimation de la capacité de la batterie pendant la charge, énergie stockée, santé, historique.

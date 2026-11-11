@@ -1,0 +1,1 @@
+First release: battery capacity estimation while charging, stored energy, health, history.
