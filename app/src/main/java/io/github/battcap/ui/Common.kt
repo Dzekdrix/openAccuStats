@@ -37,6 +37,24 @@ fun Warning.label() = when (this) {
 fun confidenceOf(name: String): Confidence =
     runCatching { Confidence.valueOf(name) }.getOrDefault(Confidence.LOW)
 
+/**
+ * Période d'une charge : « 28 oct. 2026, 22:14 - 23:51 » si elle tient dans la journée,
+ * sinon « 28 oct. 2026 22:14 - 29 oct. 2026 07:02 ». Début inconnu (charges enregistrées
+ * avant la v3 de la base) : seule la fin est indiquée.
+ */
+fun formatDateRange(context: Context, startMs: Long?, endMs: Long): String {
+    if (startMs == null) return context.getString(R.string.history_ended_at, formatDateTime(context, endMs))
+    val date = DateFormat.getMediumDateFormat(context)
+    val time = DateFormat.getTimeFormat(context)
+    val start = Date(startMs)
+    val end = Date(endMs)
+    return if (date.format(start) == date.format(end)) {
+        context.getString(R.string.history_period_same_day, date.format(start), time.format(start), time.format(end))
+    } else {
+        context.getString(R.string.history_period, formatDateTime(context, startMs), formatDateTime(context, endMs))
+    }
+}
+
 /** Date + heure au format de l'utilisateur (12/24 h, ordre jour/mois selon la langue). */
 fun formatDateTime(context: Context, epochMs: Long): String {
     val d = Date(epochMs)

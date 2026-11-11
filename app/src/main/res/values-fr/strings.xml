@@ -46,7 +46,7 @@
 
     <string name="history_empty">Aucune charge terminée pour l\'instant.</string>
     <string name="history_no_reliable" formatted="false">Pas encore de mesure fiable : une charge d\'au moins 30 % est nécessaire pour entrer dans la moyenne.</string>
-    <string name="history_item">%1$d %% → %2$d %% · confiance %3$s</string>
+    <string name="history_item">%1$d %% - %2$d %% · confiance %3$s</string>
     <string name="btn_delete">Supprimer</string>
 
     <string name="current_unavailable">non disponible sur cet appareil</string>
@@ -101,4 +101,10 @@
     <string name="history_average_help">Pondérée par le niveau gagné : seules les charges d\'au moins %d %% comptent, et une charge de 50 %% pèse deux fois moins qu\'une charge de 100 %%.</string>
     <string name="history_partial_tag">Partielle</string>
     <string name="history_partial_note">Non comptée dans la moyenne (moins de %d %%)</string>
+    <string name="history_capacity_label">Capacité totale estimée :</string>
+    <string name="history_energy_label">Énergie stockée :</string>
+    <string name="history_energy_unavailable">non disponible</string>
+    <string name="history_period_same_day">%1$s, %2$s - %3$s</string>
+    <string name="history_period">%1$s - %2$s</string>
+    <string name="history_ended_at">Terminée le %s</string>
 </resources>

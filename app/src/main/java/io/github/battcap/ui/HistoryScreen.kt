@@ -27,12 +27,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.battcap.R
 import io.github.battcap.battery.CapacityAverage
 import io.github.battcap.data.ChargeRecord
+import io.github.battcap.data.energyInWh
 import io.github.battcap.data.isPartial
 
 private const val RECENT_COUNT = 10
@@ -120,14 +125,22 @@ private fun RecordContent(r: ChargeRecord, partial: Boolean, onDelete: () -> Uni
     val secondary = if (partial) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface
     Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(
-                    stringResource(R.string.unit_mah, r.bestMah),
-                    fontWeight = if (partial) FontWeight.Medium else FontWeight.Bold,
-                    color = secondary
-                )
-                if (partial) PartialTag()
-            }
+            if (partial) PartialTag()
+            // Capacité TOTALE estimée (extrapolée à 100 %) : le résultat principal
+            LabeledValue(
+                label = stringResource(R.string.history_capacity_label),
+                value = stringResource(R.string.unit_mah, r.bestMah),
+                color = secondary,
+                strong = !partial
+            )
+            // Énergie réellement stockée pendant CETTE charge
+            LabeledValue(
+                label = stringResource(R.string.history_energy_label),
+                value = r.energyInWh?.let { stringResource(R.string.unit_wh, it) }
+                    ?: stringResource(R.string.history_energy_unavailable),
+                color = secondary,
+                strong = false
+            )
             Text(
                 stringResource(
                     R.string.history_item, r.startLevel, r.endLevel,
@@ -145,15 +158,33 @@ private fun RecordContent(r: ChargeRecord, partial: Boolean, onDelete: () -> Uni
             }
             if (r.reachedFull) {
                 Text(
-                    "✓ " + stringResource(R.string.history_full),
+                    stringResource(R.string.history_full),
                     style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
                 )
             }
-            Text(formatDateTime(context, r.endedAtEpochMs), style = MaterialTheme.typography.bodySmall, color = secondary)
+            Text(
+                formatDateRange(context, r.startedAtEpochMs, r.endedAtEpochMs),
+                style = MaterialTheme.typography.bodySmall,
+                color = secondary
+            )
         }
         TextButton(onClick = onDelete) { Text(stringResource(R.string.btn_delete)) }
     }
+}
+
+/** « Libellé : valeur », la valeur en gras si [strong]. */
+@Composable
+private fun LabeledValue(label: String, value: String, color: Color, strong: Boolean) {
+    Text(
+        buildAnnotatedString {
+            append(label)
+            append(" ")
+            withStyle(SpanStyle(fontWeight = if (strong) FontWeight.Bold else FontWeight.Medium)) { append(value) }
+        },
+        color = color
+    )
 }
 
 /** Étiquette statique (Surface tonale) : Material 3 n'a pas de composant « tag » non cliquable. */

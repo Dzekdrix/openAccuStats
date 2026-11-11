@@ -53,6 +53,7 @@ class ChargeMonitorService : Service() {
 
     private val normalizer = CurrentNormalizer()
     private var session: ChargeSession? = null
+    private var sessionStartedAtMs = 0L
     private var wasPlugged: Boolean? = null
     private var started = false
     private var stopping = false
@@ -164,6 +165,7 @@ class ChargeMonitorService : Service() {
 
     private fun startSession() {
         session = ChargeSession(normalizer)
+        sessionStartedAtMs = System.currentTimeMillis()
         ChargeRepository.publishEstimate(null)
         updateNotification(getString(R.string.notif_charging), charging = true)
     }
@@ -195,6 +197,7 @@ class ChargeMonitorService : Service() {
     private fun save(est: CapacityEstimate, plugged: Int) {
         val record = ChargeRecord(
             endedAtEpochMs = System.currentTimeMillis(),
+            startedAtEpochMs = sessionStartedAtMs,
             startLevel = est.startLevel,
             endLevel = est.endLevel,
             bestMah = est.bestMah,

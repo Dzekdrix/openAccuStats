@@ -12,6 +12,9 @@ Ajoutez vos changements sous **[Unreleased]** au fil du développement ;
   l'historique via un bouton segmenté) ; l'historique quitte l'Accueil.
 - Toutes les charges sont enregistrées, même très courtes ; les charges de moins
   de 30 % sont marquées « Partielle » et affichées en carte à contour.
+- Cartes de l'historique : « Capacité totale estimée » et « Énergie stockée » pendant
+  la charge, niveaux séparés par un tiret, date de début et de fin de la charge
+  (début inconnu pour les charges enregistrées avant cette version).
 - La capacité moyenne est pondérée par le niveau gagné (une charge de 50 % pèse
   deux fois moins qu'une charge de 100 %) et n'inclut que les charges d'au moins 30 %.
 

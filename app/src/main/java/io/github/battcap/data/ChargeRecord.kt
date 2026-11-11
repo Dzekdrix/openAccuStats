@@ -32,11 +32,19 @@ data class ChargeRecord(
     val plugged: Int,
     val confidence: String,
     /** Charge menée jusqu'au bout (statut FULL ou chute du courant à 100 %). Ajouté en v2. */
-    @ColumnInfo(defaultValue = "0") val reachedFull: Boolean = false
+    @ColumnInfo(defaultValue = "0") val reachedFull: Boolean = false,
+    /** Début de la charge (branchement ou lancement du suivi). Ajouté en v3 : null pour les charges plus anciennes. */
+    val startedAtEpochMs: Long? = null
 )
 
 // Propriétés calculées en extensions : Room ne les confond pas avec des colonnes.
 val ChargeRecord.deltaSocPct get() = endLevel - startLevel
+
+/**
+ * Énergie réellement stockée pendant la charge (Wh), null si le courant n'était pas mesuré.
+ * energyWh est l'énergie totale extrapolée à 100 % : on la ramène à la variation de niveau mesurée.
+ */
+val ChargeRecord.energyInWh get() = energyWh?.let { it * deltaSocPct / 100.0 }
 
 /** Charge trop courte pour entrer dans la moyenne (affichée différemment). */
 val ChargeRecord.isPartial get() = CapacityAverage.isPartial(deltaSocPct)
@@ -53,7 +61,7 @@ interface ChargeRecordDao {
     suspend fun delete(record: ChargeRecord)
 }
 
-@Database(entities = [ChargeRecord::class], version = 2, exportSchema = true)
+@Database(entities = [ChargeRecord::class], version = 3, exportSchema = true)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun chargeRecords(): ChargeRecordDao
 
@@ -65,11 +73,18 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        /** v2 -> v3 : ajout de la date de début de charge (inconnue pour les charges existantes). */
+        private val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE charge_records ADD COLUMN startedAtEpochMs INTEGER")
+            }
+        }
+
         @Volatile private var instance: AppDatabase? = null
 
         fun get(context: Context): AppDatabase = instance ?: synchronized(this) {
             instance ?: Room.databaseBuilder(context.applicationContext, AppDatabase::class.java, "battcap.db")
-                .addMigrations(MIGRATION_1_2)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                 .build().also { instance = it }
         }
     }

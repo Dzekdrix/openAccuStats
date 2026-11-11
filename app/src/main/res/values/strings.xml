@@ -48,7 +48,7 @@
 
     <string name="history_empty">No completed charge yet.</string>
     <string name="history_no_reliable" formatted="false">No reliable measurement yet: a charge of at least 30 % is needed to be included in the average.</string>
-    <string name="history_item">%1$d %% → %2$d %% · confidence %3$s</string>
+    <string name="history_item">%1$d %% - %2$d %% · confidence %3$s</string>
     <string name="btn_delete">Delete</string>
 
     <string name="current_unavailable">not available on this device</string>
@@ -103,4 +103,10 @@
     <string name="history_average_help">Weighted by the level gained: only charges of at least %d %% count, and a 50 %% charge weighs half as much as a 100 %% charge.</string>
     <string name="history_partial_tag">Partial</string>
     <string name="history_partial_note">Not counted in the average (less than %d %%)</string>
+    <string name="history_capacity_label">Estimated total capacity:</string>
+    <string name="history_energy_label">Energy stored:</string>
+    <string name="history_energy_unavailable">not available</string>
+    <string name="history_period_same_day">%1$s, %2$s - %3$s</string>
+    <string name="history_period">%1$s - %2$s</string>
+    <string name="history_ended_at">Ended %s</string>
 </resources>
