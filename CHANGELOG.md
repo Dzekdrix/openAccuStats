@@ -8,6 +8,16 @@ Ajoutez vos changements sous **[Unreleased]** au fil du développement ;
 
 ## [Unreleased]
 
+- Nouveau : indicateur « charge menée jusqu'au bout » dans l'historique
+  (statut FULL ou chute du courant en fin de charge).
+- Correction : les charges faites écran éteint n'étaient presque pas mesurées
+  (veille profonde) ; le processeur reste désormais éveillé pendant la charge.
+- Correction : la mesure en cours est enregistrée aussi à l'arrêt du suivi,
+  et la carte indique pourquoi la dernière charge a été enregistrée ou non.
+- Correction : le courant s'affiche aussi hors charge (négatif en décharge),
+  et « non disponible » si l'appareil ne le fournit pas.
+- Proposition d'exempter l'app de l'optimisation de batterie.
+
 ## [0.1.0] - 2026-10-22
 
 - Première version : estimation de la capacité de la batterie pendant la charge

@@ -5,6 +5,11 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Garde le processeur éveillé pendant la charge (sinon pas d'échantillons écran éteint) -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <!-- Ouvre directement la demande d'exemption d'optimisation de batterie.
+         Acceptée sur F-Droid ; Google Play la restreint à certains types d'apps. -->
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 
     <application
         android:allowBackup="true"

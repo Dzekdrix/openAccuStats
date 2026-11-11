@@ -1,8 +1,13 @@
 package io.github.battcap.ui
 
 import android.Manifest
+import android.content.ActivityNotFoundException
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
+import android.os.PowerManager
+import android.provider.Settings
 import android.text.format.DateFormat
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -17,6 +22,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -38,6 +44,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.battcap.BuildConfig
@@ -47,6 +54,8 @@ import io.github.battcap.battery.CapacityEstimate
 import io.github.battcap.battery.Confidence
 import io.github.battcap.battery.Warning
 import io.github.battcap.data.ChargeRecord
+import io.github.battcap.service.ChargeMonitorService
+import io.github.battcap.service.SessionOutcome
 import java.util.Date
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -56,6 +65,7 @@ fun MainScreen(vm: MainViewModel = viewModel()) {
     val sample by vm.sample.collectAsStateWithLifecycle()
     val currentMa by vm.currentMa.collectAsStateWithLifecycle()
     val estimate by vm.estimate.collectAsStateWithLifecycle()
+    val outcome by vm.lastOutcome.collectAsStateWithLifecycle()
     val history by vm.history.collectAsStateWithLifecycle()
     val manual by vm.manualDesignMah.collectAsStateWithLifecycle()
 
@@ -85,7 +95,8 @@ fun MainScreen(vm: MainViewModel = viewModel()) {
                     Text(stringResource(R.string.btn_start))
                 }
             }
-            item { EstimateCard(estimate, running, sample?.isCharging == true) }
+            item { BatteryOptimizationCard() }
+            item { EstimateCard(estimate, outcome, running, sample?.isCharging == true) }
             item {
                 DesignCard(vm.detectedDesignMah, manual, onSave = vm::setManualDesign)
             }
@@ -97,8 +108,11 @@ fun MainScreen(vm: MainViewModel = viewModel()) {
                 )
                 val avg = MainViewModel.reliableAverage(history)
                 Text(
-                    if (avg != null) stringResource(R.string.history_average, avg)
-                    else stringResource(R.string.history_empty),
+                    when {
+                        avg != null -> stringResource(R.string.history_average, avg)
+                        history.isNotEmpty() -> stringResource(R.string.history_no_reliable)
+                        else -> stringResource(R.string.history_empty)
+                    },
                     style = MaterialTheme.typography.bodyMedium
                 )
             }
@@ -129,7 +143,11 @@ private fun LiveCard(s: BatterySample?, currentMa: Double?) = Card(Modifier.fill
         Metric(stringResource(R.string.live_level), "${s.levelPct} %")
         Metric(
             stringResource(R.string.live_current),
-            currentMa?.let { stringResource(R.string.unit_ma, it) } ?: stringResource(R.string.calibrating)
+            when {
+                s.currentRaw == null -> stringResource(R.string.current_unavailable)
+                currentMa == null -> stringResource(R.string.calibrating)
+                else -> stringResource(R.string.unit_ma_signed, currentMa)
+            }
         )
         Metric(stringResource(R.string.live_voltage), stringResource(R.string.unit_v, s.voltageMv / 1000.0))
         Metric(stringResource(R.string.live_temp), stringResource(R.string.unit_c, s.temperatureC))
@@ -137,7 +155,12 @@ private fun LiveCard(s: BatterySample?, currentMa: Double?) = Card(Modifier.fill
 }
 
 @Composable
-private fun EstimateCard(e: CapacityEstimate?, running: Boolean, charging: Boolean) = Card(Modifier.fillMaxWidth()) {
+private fun EstimateCard(
+    e: CapacityEstimate?,
+    outcome: SessionOutcome?,
+    running: Boolean,
+    charging: Boolean
+) = Card(Modifier.fillMaxWidth()) {
     Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(stringResource(R.string.estimate_title), style = MaterialTheme.typography.titleMedium)
         if (e == null) {
@@ -146,6 +169,21 @@ private fun EstimateCard(e: CapacityEstimate?, running: Boolean, charging: Boole
                     if (running && charging) R.string.estimate_waiting else R.string.hint_start
                 )
             )
+            if (!charging && outcome != null) {
+                Text(
+                    when (outcome) {
+                        is SessionOutcome.Saved ->
+                            stringResource(R.string.outcome_saved, outcome.mah, outcome.deltaSocPct)
+                        is SessionOutcome.TooShort -> stringResource(
+                            R.string.outcome_too_short, outcome.deltaSocPct,
+                            ChargeMonitorService.MIN_SAVED_DELTA_SOC
+                        )
+                        SessionOutcome.NoMeasurement -> stringResource(R.string.outcome_none)
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.secondary
+                )
+            }
             return@Column
         }
         Text(
@@ -155,6 +193,9 @@ private fun EstimateCard(e: CapacityEstimate?, running: Boolean, charging: Boole
         )
         Text(stringResource(R.string.estimate_window, e.startLevel, e.endLevel))
         Text(stringResource(R.string.estimate_confidence, stringResource(e.confidence.label())))
+        if (e.reachedFull) {
+            Text("✓ " + stringResource(R.string.estimate_full), color = MaterialTheme.colorScheme.primary)
+        }
         e.healthPct?.let { Text(stringResource(R.string.estimate_health, it)) }
         if (e.energyWh != null && e.meanVoltageV != null) {
             Text(stringResource(R.string.estimate_energy, e.energyWh, e.meanVoltageV))
@@ -217,9 +258,52 @@ private fun RecordRow(r: ChargeRecord, onDelete: () -> Unit) {
                     ),
                     style = MaterialTheme.typography.bodySmall
                 )
+                if (r.reachedFull) {
+                    Text(
+                        "✓ " + stringResource(R.string.history_full),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
                 Text(date, style = MaterialTheme.typography.bodySmall)
             }
             TextButton(onClick = onDelete) { Text(stringResource(R.string.btn_delete)) }
+        }
+    }
+}
+
+/**
+ * Les surcouches constructeur (Xiaomi, Samsung, Huawei…) tuent souvent les services en arrière-plan
+ * malgré la notification : la mesure en cours est alors perdue. On propose l'exemption.
+ */
+@Composable
+private fun BatteryOptimizationCard() {
+    val context = LocalContext.current
+    var ignoring by remember { mutableStateOf(true) }
+    LifecycleResumeEffect(Unit) {
+        ignoring = context.getSystemService(PowerManager::class.java)
+            .isIgnoringBatteryOptimizations(context.packageName)
+        onPauseOrDispose { }
+    }
+    if (ignoring) return
+    Card(
+        Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
+    ) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(stringResource(R.string.battopt_title), style = MaterialTheme.typography.titleSmall)
+            Text(stringResource(R.string.battopt_text), style = MaterialTheme.typography.bodySmall)
+            Button(onClick = {
+                val direct = Intent(
+                    Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
+                    Uri.parse("package:${context.packageName}")
+                )
+                try {
+                    context.startActivity(direct)
+                } catch (e: ActivityNotFoundException) {
+                    context.startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
+                }
+            }) { Text(stringResource(R.string.battopt_button)) }
         }
     }
 }

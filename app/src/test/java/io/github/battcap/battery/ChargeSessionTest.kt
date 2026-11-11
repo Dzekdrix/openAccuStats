@@ -1,21 +1,24 @@
 package io.github.battcap.battery
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
- * Simule une charge à courant constant d'une batterie de capacité connue et vérifie
- * que l'estimation la retrouve, quelles que soient l'unité et le signe du courant.
+ * Simule des charges d'une batterie de capacité connue et vérifie que l'estimation
+ * la retrouve, quelles que soient l'unité et le signe du courant.
  */
 class ChargeSessionTest {
 
     /**
-     * @param capacityMah capacité réelle simulée
-     * @param currentMa   courant de charge réel
-     * @param rawFactor   1000 = l'appareil rapporte des µA, 1 = des mA
-     * @param rawSign     signe utilisé par l'appareil en charge
+     * Charge à courant constant jusqu'à [toPct], puis (si [taperToFull]) phase à tension
+     * constante simulée : courant décroissant à 100 %.
+     *
+     * @param rawFactor 1000 = l'appareil rapporte des µA, 1 = des mA
+     * @param rawSign   signe utilisé par l'appareil en charge
      */
     private fun simulate(
         capacityMah: Double,
@@ -25,27 +28,36 @@ class ChargeSessionTest {
         rawFactor: Int,
         rawSign: Int,
         withCounter: Boolean = true,
-        stepS: Double = 2.0
+        stepS: Double = 2.0,
+        taperToFull: Boolean = false,
+        session: ChargeSession = ChargeSession()
     ): ChargeSession {
-        val session = ChargeSession()
         var t = 0.0
         var soc = fromPct
-        while (soc < toPct) {
-            val chargeUah = soc / 100.0 * capacityMah * 1000.0
-            session.onSample(
-                BatterySample(
-                    tNanos = (t * 1e9).toLong(),
-                    levelPct = soc.toInt(),
-                    voltageMv = (3600 + 6 * soc).toInt(),
-                    temperatureC = 30f,
-                    currentRaw = (currentMa * rawFactor * rawSign).toInt(),
-                    chargeCounterUah = if (withCounter) chargeUah.toInt() else null,
-                    isCharging = true,
-                    plugged = 1
-                )
+        fun sample(i: Double, level: Int) = session.onSample(
+            BatterySample(
+                tNanos = (t * 1e9).toLong(),
+                levelPct = level,
+                voltageMv = (3600 + 6 * soc).toInt(),
+                temperatureC = 30f,
+                currentRaw = (i * rawFactor * rawSign).toInt(),
+                chargeCounterUah = if (withCounter) (soc / 100.0 * capacityMah * 1000.0).toInt() else null,
+                isCharging = true,
+                plugged = 1
             )
+        )
+        while (soc < toPct) {
+            sample(currentMa, soc.toInt())
             t += stepS
             soc += currentMa * stepS / 3600.0 / capacityMah * 100.0
+        }
+        if (taperToFull) {
+            var i = currentMa
+            repeat(600) { // 20 min de phase à tension constante
+                sample(i, 100)
+                t += stepS
+                i *= 0.99
+            }
         }
         return session
     }
@@ -69,6 +81,7 @@ class ChargeSessionTest {
         assertEquals(90.0, e.healthPct!!, 1.0)
         assertEquals(Confidence.HIGH, e.confidence)
         assertTrue(e.warnings.isEmpty())
+        assertFalse(e.reachedFull)
     }
 
     @Test
@@ -94,5 +107,57 @@ class ChargeSessionTest {
         val e = CapacityEstimator.estimate(s, null)!!
         assertEquals(Confidence.LOW, e.confidence)
         assertTrue(Warning.SHORT_WINDOW in e.warnings)
+    }
+
+    @Test
+    fun sparseSamplingStillAnchors() {
+        // Échantillons espacés : le niveau saute de plusieurs points entre deux lectures
+        val s = simulate(4000.0, 3000.0, 20.0, 80.0, 1000, 1, stepS = 50.0)
+        val e = CapacityEstimator.estimate(s, null)
+        assertNotNull(e)
+        assertEquals(4000.0, e!!.chargeCounterMah!!, 4000.0 * 0.03)
+    }
+
+    @Test
+    fun fullDetectedFromCurrentTaper() {
+        val s = simulate(4000.0, 2000.0, 40.0, 100.0, 1000, -1, taperToFull = true)
+        assertTrue(s.reachedFull)
+        assertTrue(CapacityEstimator.estimate(s, null)!!.reachedFull)
+    }
+
+    @Test
+    fun fullDetectedFromStatus() {
+        val s = simulate(4000.0, 2000.0, 60.0, 99.5, 1000, 1)
+        assertFalse(s.reachedFull)
+        s.onSample(BatterySample(Long.MAX_VALUE / 2, 100, 4350, 30f, 0, 4_000_000, true, 1, isFull = true))
+        assertTrue(s.reachedFull)
+    }
+
+    @Test
+    fun chargeLimitIsNotFull() {
+        // Limite de charge à 80 % (protection batterie) : pas une charge complète
+        val s = simulate(4000.0, 2000.0, 20.0, 80.0, 1000, 1)
+        assertFalse(s.reachedFull)
+    }
+
+    @Test
+    fun displayCurrentWhileDischarging() {
+        // Avant toute charge : l'unité est apprise en décharge, le courant s'affiche négatif
+        val n = CurrentNormalizer()
+        assertNull(n.displayMa(450_000, charging = false))
+        repeat(5) { n.feed(450_000, charging = false) }
+        assertEquals(-450.0, n.displayMa(450_000, charging = false)!!, 0.1)
+        assertEquals(-450.0, n.displayMa(-450_000, charging = false)!!, 0.1)
+    }
+
+    @Test
+    fun idleCalibrationInMilliampsIsCorrectedByCharge() {
+        // Écran éteint, 8 mA en µA (8000) : pris à tort pour des mA, puis corrigé dès la charge
+        val n = CurrentNormalizer()
+        repeat(5) { n.feed(8_000, charging = false) }
+        assertEquals(1000, n.factorToUa)
+        val s = simulate(4500.0, 2000.0, 30.0, 80.0, 1000, 1, session = ChargeSession(n))
+        assertEquals(1, n.factorToUa)
+        assertEquals(4500.0, CapacityEstimator.estimate(s, null)!!.coulombMah!!, 45.0)
     }
 }

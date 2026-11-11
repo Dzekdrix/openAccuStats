@@ -25,6 +25,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     val sample = ChargeRepository.lastSample
     val currentMa = ChargeRepository.currentMa
     val estimate = ChargeRepository.estimate
+    val lastOutcome = ChargeRepository.lastOutcome
 
     val history: StateFlow<List<ChargeRecord>> =
         dao.observeAll().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())

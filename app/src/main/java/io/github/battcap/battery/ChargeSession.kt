@@ -4,13 +4,17 @@ package io.github.battcap.battery
  * Intègre le courant (coulomb counting) et la puissance pendant une charge.
  *
  * Le niveau Android est un ENTIER : une fenêtre 20→80 % aurait jusqu'à ±3 % d'erreur
- * relative. On ancre donc la mesure sur les TRANSITIONS de niveau : on commence à
- * intégrer à l'instant où le niveau passe de N à N+1, et chaque transition suivante
+ * relative. On ancre donc la mesure sur les CHANGEMENTS de niveau : on commence à
+ * intégrer à l'instant où le niveau augmente, et chaque augmentation suivante
  * fige un résultat candidat. L'erreur de quantification devient quasi nulle.
+ *
+ * @param normalizer partagé avec le service : l'unité et le signe du courant sont des
+ *        propriétés de l'appareil, inutile de les réapprendre à chaque charge.
  */
-class ChargeSession(private val maxGapSeconds: Double = 60.0) {
-
-    private val normalizer = CurrentNormalizer()
+class ChargeSession(
+    private val normalizer: CurrentNormalizer = CurrentNormalizer(),
+    private val maxGapSeconds: Double = 60.0
+) {
     private var prev: BatterySample? = null
     private var prevCurrentUa: Long? = null
 
@@ -23,10 +27,20 @@ class ChargeSession(private val maxGapSeconds: Double = 60.0) {
     private var chargeUah = 0.0
     private var energyUwh = 0.0
 
+    private var peakCurrentUa = 0L
+    private var taperSinceNs: Long? = null
+
     var snapshot: Snapshot? = null; private set
     var gapsDetected = 0; private set
     var maxTempC = Float.NEGATIVE_INFINITY; private set
     var lastPlugged = 0; private set
+
+    /**
+     * Fin de charge réellement atteinte : statut FULL rapporté par le système, ou, à 100 %,
+     * courant retombé sous 10 % du courant maximal de la charge pendant au moins une minute
+     * (fin de la phase à tension constante du chargeur Li-ion).
+     */
+    var reachedFull = false; private set
 
     data class Snapshot(
         val startLevel: Int,
@@ -37,23 +51,24 @@ class ChargeSession(private val maxGapSeconds: Double = 60.0) {
         val durationS: Double
     )
 
-    /** Courant instantané normalisé (µA, positif = entrant), null tant que non calibré. */
-    fun normalizedCurrentUa(raw: Int?): Long? = raw?.let { normalizer.toChargingUa(it) }
-
     fun onSample(s: BatterySample) {
-        if (!s.isCharging) { prev = s; prevCurrentUa = null; return }
+        s.currentRaw?.let { normalizer.feed(it, charging = s.isCharging && !s.isFull) }
+        if (!s.isCharging) {
+            prev = s; prevCurrentUa = null; taperSinceNs = null
+            return
+        }
         maxTempC = maxOf(maxTempC, s.temperatureC)
         lastPlugged = s.plugged
 
-        s.currentRaw?.let { if (!normalizer.isCalibrated) normalizer.feed(it) }
         val iUa = s.currentRaw?.let { normalizer.toChargingUa(it) }
+        updateFullDetection(s, iUa)
         val p = prev
 
-        // 1) Ancrage sur la première transition de niveau.
+        // 1) Ancrage sur le premier changement de niveau.
         //    Si le courant n'est pas exposé, on ancre quand même : le compteur de charge peut suffire.
         if (!anchorStarted) {
             val currentReady = normalizer.isCalibrated || s.currentRaw == null
-            if (currentReady && p != null && p.isCharging && s.levelPct == p.levelPct + 1) {
+            if (currentReady && p != null && p.isCharging && s.levelPct > p.levelPct) {
                 anchorStarted = true
                 anchorTimeNs = s.tNanos
                 startLevel = s.levelPct
@@ -78,7 +93,7 @@ class ChargeSession(private val maxGapSeconds: Double = 60.0) {
             }
         }
 
-        // 3) Nouvelle transition => fin de fenêtre candidate
+        // 3) Nouveau niveau => fin de fenêtre candidate
         if (s.levelPct > lastObservedLevel) {
             lastObservedLevel = s.levelPct
             val ccEnd = s.chargeCounterUah
@@ -94,5 +109,22 @@ class ChargeSession(private val maxGapSeconds: Double = 60.0) {
         }
 
         prev = s; prevCurrentUa = iUa
+    }
+
+    private fun updateFullDetection(s: BatterySample, iUa: Long?) {
+        if (s.isFull) { reachedFull = true; return }
+        if (iUa == null) return
+        peakCurrentUa = maxOf(peakCurrentUa, iUa)
+        val tapering = s.levelPct >= 100 && peakCurrentUa >= MIN_PEAK_UA &&
+                iUa < peakCurrentUa * TAPER_RATIO
+        if (!tapering) { taperSinceNs = null; return }
+        val since = taperSinceNs ?: s.tNanos.also { taperSinceNs = it }
+        if (s.tNanos - since >= TAPER_HOLD_NS) reachedFull = true
+    }
+
+    private companion object {
+        const val MIN_PEAK_UA = 300_000L          // en dessous, la notion de "chute" n'a pas de sens
+        const val TAPER_RATIO = 0.10
+        const val TAPER_HOLD_NS = 60_000_000_000L // 1 min
     }
 }

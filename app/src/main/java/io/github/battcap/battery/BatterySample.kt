@@ -12,6 +12,7 @@ data class BatterySample(
     val temperatureC: Float,       // EXTRA_TEMPERATURE / 10
     val currentRaw: Int?,          // BATTERY_PROPERTY_CURRENT_NOW, null si non supporté
     val chargeCounterUah: Int?,    // BATTERY_PROPERTY_CHARGE_COUNTER (µAh), null si non supporté
-    val isCharging: Boolean,
-    val plugged: Int               // BATTERY_PLUGGED_AC / USB / WIRELESS / 0
+    val isCharging: Boolean,       // statut CHARGING ou FULL
+    val plugged: Int,              // BATTERY_PLUGGED_AC / USB / WIRELESS / 0
+    val isFull: Boolean = false    // statut FULL : le chargeur a terminé la charge
 )

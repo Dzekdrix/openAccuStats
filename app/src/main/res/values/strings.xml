@@ -17,7 +17,6 @@
     <string name="live_voltage">Voltage</string>
     <string name="live_temp">Temperature</string>
     <string name="calibrating">calibrating…</string>
-    <string name="unit_ma">%.0f mA</string>
     <string name="unit_mah">%.0f mAh</string>
     <string name="unit_v">%.3f V</string>
     <string name="unit_c">%.1f °C</string>
@@ -53,8 +52,20 @@
     <string name="history_title">History</string>
     <string name="history_average">Average of reliable measurements: %.0f mAh</string>
     <string name="history_empty">No completed charge yet.</string>
+    <string name="history_no_reliable" formatted="false">No reliable measurement yet: a charge of at least 30 % is needed to be included in the average.</string>
     <string name="history_item">%1$d %% → %2$d %% · confidence %3$s</string>
     <string name="btn_delete">Delete</string>
+
+    <string name="current_unavailable">not available on this device</string>
+    <string name="unit_ma_signed">%+.0f mA</string>
+    <string name="estimate_full">End of charge reached</string>
+    <string name="history_full">Charged to the end</string>
+    <string name="outcome_saved">Last charge saved: %1$.0f mAh over %2$d %%.</string>
+    <string name="outcome_too_short">Last charge not saved: only %1$d %% measured (minimum %2$d %%).</string>
+    <string name="outcome_none">Last charge not saved: no level change could be measured.</string>
+    <string name="battopt_title">Battery optimization is on</string>
+    <string name="battopt_text">Android may stop the monitoring in the background and lose the charge in progress. Exempting BattCap avoids this; it only uses the battery significantly while plugged in.</string>
+    <string name="battopt_button">Exempt BattCap</string>
 
     <string name="version_label">Version %s</string>
 </resources>

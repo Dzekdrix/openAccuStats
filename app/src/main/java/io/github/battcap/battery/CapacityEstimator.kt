@@ -17,6 +17,7 @@ data class CapacityEstimate(
     val healthPct: Double?,                // vs capacité nominale si connue
     val durationS: Double,
     val maxTempC: Float,
+    val reachedFull: Boolean,
     val confidence: Confidence,
     val warnings: List<Warning>
 ) {
@@ -75,6 +76,7 @@ object CapacityEstimator {
             healthPct = designCapacityMah?.let { best / it * 100.0 },
             durationS = snap.durationS,
             maxTempC = session.maxTempC,
+            reachedFull = session.reachedFull,
             confidence = confidence,
             warnings = warnings
         )

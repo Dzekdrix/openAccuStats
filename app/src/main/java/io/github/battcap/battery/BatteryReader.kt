@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.BatteryManager
+import android.os.Build
 import android.os.SystemClock
 
 class BatteryReader(private val context: Context) {
@@ -28,12 +29,21 @@ class BatteryReader(private val context: Context) {
             chargeCounterUah = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CHARGE_COUNTER).validOrNull(),
             isCharging = status == BatteryManager.BATTERY_STATUS_CHARGING ||
                     status == BatteryManager.BATTERY_STATUS_FULL,
-            plugged = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0)
+            plugged = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0),
+            isFull = status == BatteryManager.BATTERY_STATUS_FULL
         )
     }
 
-    /** Int.MIN_VALUE = propriété non supportée ; 0 = souvent "pas d'info" sur d'anciens HAL. */
-    private fun Int.validOrNull(): Int? = if (this == Int.MIN_VALUE || this == 0) null else this
+    /**
+     * Int.MIN_VALUE = propriété non supportée (Android 9+). Avant Android 9, une propriété
+     * non supportée renvoyait 0 : on ne traite 0 comme "absent" que sur ces versions,
+     * car un courant nul est une valeur légitime (batterie pleine sur secteur).
+     */
+    private fun Int.validOrNull(): Int? = when {
+        this == Int.MIN_VALUE -> null
+        this == 0 && Build.VERSION.SDK_INT < Build.VERSION_CODES.P -> null
+        else -> this
+    }
 
     companion object {
         /**
