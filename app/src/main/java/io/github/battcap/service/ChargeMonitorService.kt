@@ -71,34 +71,63 @@ class ChargeMonitorService : Service() {
         override fun onReceive(c: Context, i: Intent) { wake.trySend(Unit) }
     }
 
+    private var receiverRegistered = false
+
     override fun onCreate() {
         super.onCreate()
-        reader = BatteryReader(this)
-        settings = Settings(this)
-        wakeLock = getSystemService(PowerManager::class.java)
-            .newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "BattCap:charge")
-            .apply { setReferenceCounted(false) }
-        ContextCompat.registerReceiver(
-            this, powerReceiver,
-            IntentFilter().apply {
-                addAction(Intent.ACTION_POWER_CONNECTED)
-                addAction(Intent.ACTION_POWER_DISCONNECTED)
-            },
-            ContextCompat.RECEIVER_NOT_EXPORTED // les broadcasts système restent reçus
-        )
+        try {
+            reader = BatteryReader(this)
+            settings = Settings(this)
+            wakeLock = getSystemService(PowerManager::class.java)
+                .newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "BattCap:charge")
+                .apply { setReferenceCounted(false) }
+            ContextCompat.registerReceiver(
+                this, powerReceiver,
+                IntentFilter().apply {
+                    addAction(Intent.ACTION_POWER_CONNECTED)
+                    addAction(Intent.ACTION_POWER_DISCONNECTED)
+                },
+                ContextCompat.RECEIVER_NOT_EXPORTED // les broadcasts système restent reçus
+            )
+            receiverRegistered = true
+        } catch (t: Throwable) {
+            DiagnosticLog.logError(this, "onCreate", t)
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         // startForeground doit être appelé dans les 5 s qui suivent startForegroundService,
-        // même si le service s'arrête aussitôt : sinon Android plante l'app.
-        val plugged = reader.read()?.let { it.plugged != 0 } ?: false
-        ServiceCompat.startForeground(
-            this, Notifications.ID_SERVICE,
-            Notifications.service(
-                this, getString(if (plugged) R.string.notif_charging else R.string.notif_waiting), plugged
-            ),
-            ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
-        )
+        // même si le service s'arrête aussitôt : sinon Android plante l'app. On le fait donc
+        // avant tout le reste, et en dehors du try/catch qui suit : si onCreate() a échoué,
+        // le service doit quand même pouvoir s'arrêter proprement plutôt que tuer l'app.
+        val plugged = try {
+            reader.read()?.let { it.plugged != 0 } ?: false
+        } catch (t: Throwable) {
+            DiagnosticLog.logError(this, "onStartCommand.read", t); false
+        }
+        try {
+            ServiceCompat.startForeground(
+                this, Notifications.ID_SERVICE,
+                Notifications.service(
+                    this, getString(if (plugged) R.string.notif_charging else R.string.notif_waiting), plugged
+                ),
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
+            )
+        } catch (t: Throwable) {
+            DiagnosticLog.logError(this, "startForeground", t)
+            stopSelf()
+            return START_NOT_STICKY
+        }
+        return try {
+            handleStartCommand(intent, plugged)
+        } catch (t: Throwable) {
+            DiagnosticLog.logError(this, "onStartCommand", t)
+            stopSelf()
+            START_NOT_STICKY // pas START_STICKY : éviter qu'Android reparte en boucle sur la même erreur
+        }
+    }
+
+    private fun handleStartCommand(intent: Intent?, plugged: Boolean): Int {
         if (intent?.action == ACTION_STOP) {
             MonitoringController.disable(this) // depuis la notification : désactive le suivi
             return START_NOT_STICKY
@@ -111,7 +140,14 @@ class ChargeMonitorService : Service() {
             started = true
             DiagnosticLog.log(this, "Service de mesure démarré (branché=$plugged)")
             ChargeRepository.setRunning(true)
-            scope.launch { sampleLoop() }
+            scope.launch {
+                try {
+                    sampleLoop()
+                } catch (t: Throwable) {
+                    DiagnosticLog.logError(this@ChargeMonitorService, "sampleLoop", t)
+                    stopSelf()
+                }
+            }
             // Écran de l'app affiché : on réveille la boucle pour un affichage immédiat
             scope.launch { ChargeRepository.uiVisible.collect { if (it) wake.trySend(Unit) } }
         }
@@ -120,8 +156,19 @@ class ChargeMonitorService : Service() {
 
     private suspend fun sampleLoop() {
         while (scope.isActive) {
-            val s = reader.read()
-            if (s != null) handle(s)
+            val s = try {
+                reader.read()
+            } catch (t: Throwable) {
+                DiagnosticLog.logError(this, "reader.read", t); null
+            }
+            if (s != null) {
+                try {
+                    handle(s)
+                } catch (t: Throwable) {
+                    // Un échantillon fautif ne doit pas arrêter tout le suivi
+                    DiagnosticLog.logError(this, "handle", t)
+                }
+            }
             val delayMs = when {
                 s == null -> 5_000L
                 // 2 s : les constantes de temps de la charge sont de l'ordre de la minute
@@ -151,8 +198,8 @@ class ChargeMonitorService : Service() {
             charging.onSample(s)
             if (s.isCharging) publishEstimate(charging)
         } else {
-            dischargeSession?.onSample(s)
-            s.currentRaw?.let { normalizer.feed(it, charging = false) }
+            dischargeSession?.onSample(s) // calibre déjà le normalizer en décharge, pas besoin de le refaire ici
+            publishDischargeEstimate(dischargeSession)
         }
 
         // Wakelock seulement tant que la charge progresse vraiment
@@ -174,6 +221,7 @@ class ChargeMonitorService : Service() {
     private fun startDischargeSession() {
         dischargeSession = DischargeSession(normalizer)
         sessionStartedAtMs = System.currentTimeMillis()
+        ChargeRepository.publishDischargeEstimate(null)
         updateNotification(getString(R.string.notif_waiting), charging = false)
     }
 
@@ -181,6 +229,23 @@ class ChargeMonitorService : Service() {
         val est = CapacityEstimator.estimate(current, settings.designMah) ?: return
         ChargeRepository.publishEstimate(est)
         updateNotification(getString(R.string.notif_estimate, est.bestMah, est.deltaSocPct), charging = true)
+    }
+
+    /**
+     * Estimation en direct pendant une décharge, pour l'écran d'accueil. Contrairement à la
+     * charge, [DischargeSession.snapshot] ne se met à jour qu'au changement de niveau entier
+     * suivant (pas de notion de « phase finale » équivalente au palier à 100 % en charge) :
+     * entre deux changements, l'estimation affichée reste donc celle du dernier palier franchi.
+     */
+    private fun publishDischargeEstimate(current: DischargeSession?) {
+        val est = current?.let { CapacityEstimator.estimateDischarge(it, settings.designMah) }
+        ChargeRepository.publishDischargeEstimate(est)
+        val text = if (est != null) {
+            getString(R.string.notif_discharging_estimate, est.bestMah, est.startLevel, est.endLevel)
+        } else {
+            getString(R.string.notif_waiting)
+        }
+        updateNotification(text, charging = false)
     }
 
     /** Fige la mesure de charge (débranchement ou arrêt du suivi) et l'enregistre si exploitable. */
@@ -212,6 +277,7 @@ class ChargeMonitorService : Service() {
     private fun finishDischargeSession() {
         val ended = dischargeSession ?: return
         dischargeSession = null
+        ChargeRepository.publishDischargeEstimate(null)
 
         val est = CapacityEstimator.estimateDischarge(ended, settings.designMah) ?: return
         save(est, plugged = 0, isDischarge = true)
@@ -250,12 +316,23 @@ class ChargeMonitorService : Service() {
 
     override fun onDestroy() {
         DiagnosticLog.log(this, "Service arrêté")
-        finishChargeSession() // arrêt du suivi pendant une charge : la mesure en cours est conservée
-        finishDischargeSession() // idem pendant une décharge
-        if (wakeLock.isHeld) wakeLock.release()
-        unregisterReceiver(powerReceiver)
+        try {
+            finishChargeSession() // arrêt du suivi pendant une charge : la mesure en cours est conservée
+            finishDischargeSession() // idem pendant une décharge
+        } catch (t: Throwable) {
+            DiagnosticLog.logError(this, "onDestroy.finish", t)
+        }
+        if (::wakeLock.isInitialized && wakeLock.isHeld) wakeLock.release()
+        if (receiverRegistered) {
+            try {
+                unregisterReceiver(powerReceiver)
+            } catch (t: Throwable) {
+                DiagnosticLog.logError(this, "unregisterReceiver", t)
+            }
+        }
         scope.cancel()
         ChargeRepository.setRunning(false)
+        ChargeRepository.publishDischargeEstimate(null)
         super.onDestroy()
     }
 

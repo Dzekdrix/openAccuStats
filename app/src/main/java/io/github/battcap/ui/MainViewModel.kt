@@ -31,6 +31,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     val sample = ChargeRepository.lastSample
     val currentMa = ChargeRepository.currentMa
     val estimate = ChargeRepository.estimate
+    val dischargeEstimate = ChargeRepository.dischargeEstimate
     val lastOutcome = ChargeRepository.lastOutcome
 
     val history: StateFlow<List<ChargeRecord>> =

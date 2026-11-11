@@ -6,6 +6,7 @@
     <string name="notif_waiting">Waiting for a charge</string>
     <string name="notif_charging">Charging: measuring…</string>
     <string name="notif_estimate">≈ %1$.0f mAh over %2$d %% of charge</string>
+    <string name="notif_discharging_estimate">Discharge in progress: ≈ %1$.0f mAh (%2$d %% → %3$d %%)</string>
     <string name="action_stop">Stop</string>
 
     <string name="live_title">Battery now</string>
@@ -25,6 +26,8 @@
     <string name="btn_stop">Stop monitoring</string>
 
     <string name="estimate_title">Current charge</string>
+    <string name="discharge_title">Discharge in progress</string>
+    <string name="discharge_waiting">Measuring the discharge… the first estimate appears after two level drops.</string>
     <string name="hint_start" formatted="false">Start monitoring, then plug in your phone. A charge covering at least 30 % (ideally 50 % or more) gives a reliable result.</string>
     <string name="estimate_waiting">Measuring… the first estimate appears after two level increments.</string>
     <string name="estimate_confidence">Confidence: %s</string>

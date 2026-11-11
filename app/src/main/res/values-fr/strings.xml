@@ -4,6 +4,7 @@
     <string name="notif_waiting">En attente d\'une charge</string>
     <string name="notif_charging">En charge : mesure en cours…</string>
     <string name="notif_estimate">≈ %1$.0f mAh sur %2$d %% de charge</string>
+    <string name="notif_discharging_estimate">Décharge en cours : ≈ %1$.0f mAh (%2$d %% → %3$d %%)</string>
     <string name="action_stop">Arrêter</string>
 
     <string name="live_title">Batterie en direct</string>
@@ -23,6 +24,8 @@
     <string name="btn_stop">Arrêter le suivi</string>
 
     <string name="estimate_title">Charge en cours</string>
+    <string name="discharge_title">Décharge en cours</string>
+    <string name="discharge_waiting">Décharge en cours… la première estimation apparaît après deux changements de niveau.</string>
     <string name="hint_start" formatted="false">Lancez le suivi, puis branchez votre téléphone. Une charge d\'au moins 30 % (idéalement 50 % ou plus) donne un résultat fiable.</string>
     <string name="estimate_waiting">Mesure en cours… la première estimation apparaît après deux changements de niveau.</string>
     <string name="estimate_confidence">Confiance : %s</string>

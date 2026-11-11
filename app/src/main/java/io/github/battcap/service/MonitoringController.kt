@@ -78,12 +78,18 @@ object MonitoringController {
      * JobScheduler, ou app exemptée.
      */
     fun ensure(context: Context, reason: String) {
-        refresh(context)
-        if (!isEnabled(context)) return
-        scheduleJobs(context)
-        if (!ChargeRepository.running.value) {
-            DiagnosticLog.log(context, "[$reason] démarrage du service")
-            startService(context)
+        // Appelé depuis MainActivity.onStart() sans filet : ne doit jamais faire planter l'app
+        // appelante, quoi qu'il arrive côté JobScheduler ou démarrage du service.
+        try {
+            refresh(context)
+            if (!isEnabled(context)) return
+            scheduleJobs(context)
+            if (!ChargeRepository.running.value) {
+                DiagnosticLog.log(context, "[$reason] démarrage du service")
+                startService(context)
+            }
+        } catch (t: Throwable) {
+            DiagnosticLog.logError(context, "ensure($reason)", t)
         }
     }
 
@@ -91,34 +97,38 @@ object MonitoringController {
     fun startService(context: Context): Boolean = try {
         ContextCompat.startForegroundService(context, Intent(context, ChargeMonitorService::class.java))
         true
-    } catch (e: Exception) {
+    } catch (t: Throwable) {
         // ForegroundServiceStartNotAllowedException (Android 12+) ou IllegalStateException (Android 8+)
-        DiagnosticLog.log(context, "REFUS d'Android au démarrage du service : ${e.javaClass.simpleName}")
+        DiagnosticLog.logError(context, "startService", t)
         false
     }
 
     /** Programme (ou reprogramme) les deux tâches. Persistantes : elles survivent au redémarrage. */
     fun scheduleJobs(context: Context) {
-        val scheduler = context.getSystemService(JobScheduler::class.java)
-        val component = ComponentName(context, ChargeJobService::class.java)
+        try {
+            val scheduler = context.getSystemService(JobScheduler::class.java)
+            val component = ComponentName(context, ChargeJobService::class.java)
 
-        val charging = JobInfo.Builder(JOB_ID_CHARGING, component)
-            .setRequiresCharging(true)
-            .setPersisted(true)
-            .build()
-        if (scheduler.schedule(charging) != JobScheduler.RESULT_SUCCESS) {
-            DiagnosticLog.log(context, "ÉCHEC de la programmation de la tâche « branchement »")
-        }
-
-        // Ne pas reprogrammer la tâche périodique si elle existe déjà : cela remettrait son délai à zéro
-        if (scheduler.getPendingJob(JOB_ID_SAFETY) == null) {
-            val safety = JobInfo.Builder(JOB_ID_SAFETY, component)
-                .setPeriodic(SAFETY_PERIOD_MS)
+            val charging = JobInfo.Builder(JOB_ID_CHARGING, component)
+                .setRequiresCharging(true)
                 .setPersisted(true)
                 .build()
-            if (scheduler.schedule(safety) != JobScheduler.RESULT_SUCCESS) {
-                DiagnosticLog.log(context, "ÉCHEC de la programmation de la vérification périodique")
+            if (scheduler.schedule(charging) != JobScheduler.RESULT_SUCCESS) {
+                DiagnosticLog.log(context, "ÉCHEC de la programmation de la tâche « branchement »")
             }
+
+            // Ne pas reprogrammer la tâche périodique si elle existe déjà : cela remettrait son délai à zéro
+            if (scheduler.getPendingJob(JOB_ID_SAFETY) == null) {
+                val safety = JobInfo.Builder(JOB_ID_SAFETY, component)
+                    .setPeriodic(SAFETY_PERIOD_MS)
+                    .setPersisted(true)
+                    .build()
+                if (scheduler.schedule(safety) != JobScheduler.RESULT_SUCCESS) {
+                    DiagnosticLog.log(context, "ÉCHEC de la programmation de la vérification périodique")
+                }
+            }
+        } catch (t: Throwable) {
+            DiagnosticLog.logError(context, "scheduleJobs", t)
         }
     }
 

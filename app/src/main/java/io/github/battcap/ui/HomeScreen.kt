@@ -48,6 +48,7 @@ fun HomeScreen(vm: MainViewModel, padding: PaddingValues) {
     val sample by vm.sample.collectAsStateWithLifecycle()
     val currentMa by vm.currentMa.collectAsStateWithLifecycle()
     val estimate by vm.estimate.collectAsStateWithLifecycle()
+    val dischargeEstimate by vm.dischargeEstimate.collectAsStateWithLifecycle()
     val outcome by vm.lastOutcome.collectAsStateWithLifecycle()
 
     val context = LocalContext.current
@@ -76,7 +77,13 @@ fun HomeScreen(vm: MainViewModel, padding: PaddingValues) {
             }
         }
         item { BatteryOptimizationCard() }
-        item { EstimateCard(estimate, outcome, running, sample?.isCharging == true) }
+        item {
+            when {
+                sample?.isCharging == true -> EstimateCard(estimate, outcome, running, charging = true)
+                running -> DischargeCard(dischargeEstimate)
+                else -> EstimateCard(estimate, outcome, running, charging = false)
+            }
+        }
     }
 }
 
@@ -160,6 +167,48 @@ private fun EstimateCard(
             Metric(stringResource(R.string.estimate_energy_total), stringResource(R.string.unit_wh, e.energyWh))
             Metric(stringResource(R.string.estimate_mean_voltage), stringResource(R.string.unit_v, e.meanVoltageV))
         }
+        Text(
+            stringResource(
+                R.string.estimate_methods,
+                e.coulombMah?.let { stringResource(R.string.unit_mah, it) } ?: "—",
+                e.chargeCounterMah?.let { stringResource(R.string.unit_mah, it) } ?: "—"
+            ),
+            style = MaterialTheme.typography.bodySmall,
+            modifier = Modifier.padding(top = 4.dp)
+        )
+        e.warnings.forEach {
+            Text(
+                "⚠ " + stringResource(it.label()), color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
+    }
+}
+
+/** Équivalent de EstimateCard pour un cycle de décharge en cours (téléphone débranché, suivi actif). */
+@Composable
+private fun DischargeCard(e: CapacityEstimate?) = Card(Modifier.fillMaxWidth()) {
+    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text(stringResource(R.string.discharge_title), style = MaterialTheme.typography.titleMedium)
+        if (e == null) {
+            Text(stringResource(R.string.discharge_waiting))
+            return@Column
+        }
+        Text(stringResource(R.string.estimate_capacity_label), style = MaterialTheme.typography.labelLarge)
+        Text(
+            stringResource(R.string.unit_mah, e.bestMah),
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold
+        )
+        Text(stringResource(R.string.estimate_confidence, stringResource(e.confidence.label())))
+        e.healthPct?.let { Text(stringResource(R.string.estimate_health, it)) }
+
+        HorizontalDivider(Modifier.padding(vertical = 6.dp))
+
+        Metric(
+            stringResource(R.string.estimate_charge_in),
+            stringResource(R.string.estimate_charge_in_value, e.chargeInMah, e.startLevel, e.endLevel)
+        )
         Text(
             stringResource(
                 R.string.estimate_methods,

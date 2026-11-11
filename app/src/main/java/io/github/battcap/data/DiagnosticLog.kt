@@ -34,4 +34,10 @@ object DiagnosticLog {
     fun clear(context: Context) {
         context.applicationContext.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().remove(KEY).apply()
     }
+
+    /** Journalise une exception attrapée (type, message, 3 premières lignes de la pile). */
+    fun logError(context: Context, where: String, t: Throwable) {
+        val top = t.stackTrace.take(3).joinToString(" | ") { "${it.className}.${it.methodName}:${it.lineNumber}" }
+        log(context, "ERREUR [$where] ${t.javaClass.simpleName}: ${t.message} — $top")
+    }
 }

@@ -12,7 +12,11 @@ Ajoutez vos changements sous **[Unreleased]** au fil du développement ;
   de se limiter au branchement ; il se relance automatiquement après un redémarrage du téléphone
   s'il était activé avant.
 - Nouveau : les cycles de décharge sont eux aussi mesurés et enregistrés dans l'historique
-  (capacité totale estimée, pourcentage de départ et de fin, étiquette « Décharge »).
+  (capacité totale estimée, pourcentage de départ et de fin, étiquette « Décharge »), et affichés
+  en direct sur l'Accueil pendant qu'ils sont en cours, comme pour une charge.
+- Le suivi en continu est maintenant protégé par un filet d'erreur à chaque étape (démarrage du
+  service, réception de la batterie, écriture en base…) : un incident imprévu est consigné dans
+  le journal de diagnostic au lieu de faire planter l'application.
 - Correction : la charge entrée après avoir atteint 100 % (phase à tension constante du
   chargeur) est désormais comptée jusqu'au débranchement, au lieu d'être ignorée.
 
