@@ -1,0 +1,1 @@
+Nouvel écran Historique (10 dernières charges ou tout l'historique). Toutes les charges sont enregistrées, celles de moins de 30 % sont marquées « Partielle ». Cartes avec capacité estimée, charge stockée et dates. Moyenne pondérée par le niveau gagné.

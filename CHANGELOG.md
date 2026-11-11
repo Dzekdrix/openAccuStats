@@ -8,6 +8,8 @@ Ajoutez vos changements sous **[Unreleased]** au fil du développement ;
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-11-11
+
 - Nouveau : écran Historique dans le menu latéral (10 dernières charges, ou tout
   l'historique via un bouton segmenté) ; l'historique quitte l'Accueil.
 - Toutes les charges sont enregistrées, même très courtes ; les charges de moins

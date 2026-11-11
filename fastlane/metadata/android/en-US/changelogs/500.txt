@@ -1,0 +1,1 @@
+New History screen (last 10 charges or full history). Every charge is saved; those under 30 % are marked "Partial". Cards show estimated capacity, stored charge and dates. Average weighted by the level gained.
