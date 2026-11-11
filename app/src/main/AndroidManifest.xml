@@ -7,6 +7,8 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- Garde le processeur éveillé pendant la charge (sinon pas d'échantillons écran éteint) -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <!-- La tâche « en charge » est persistante : elle doit survivre au redémarrage -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <!-- Ouvre directement la demande d'exemption d'optimisation de batterie.
          Acceptée sur F-Droid ; Google Play la restreint à certains types d'apps. -->
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
@@ -36,5 +38,11 @@
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="Continuous sampling of battery current during charging to estimate battery capacity" />
         </service>
+
+        <!-- Réveille l'app au branchement du chargeur pour lancer la mesure -->
+        <service
+            android:name=".service.ChargeJobService"
+            android:exported="false"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
     </application>
 </manifest>

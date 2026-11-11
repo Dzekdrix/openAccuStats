@@ -9,7 +9,7 @@
     <string name="action_stop">Stop</string>
 
     <string name="live_title">Battery now</string>
-    <string name="live_no_data">Start monitoring to see live readings.</string>
+    <string name="live_no_data">Reading the battery…</string>
     <string name="status_charging">Charging</string>
     <string name="status_not_charging">Not charging</string>
     <string name="live_level">Level</string>
@@ -61,7 +61,7 @@
     <string name="outcome_too_short">Last charge not saved: only %1$d %% measured (minimum %2$d %%).</string>
     <string name="outcome_none">Last charge not saved: no level change could be measured.</string>
     <string name="battopt_title">Battery optimization is on</string>
-    <string name="battopt_text">Android may stop the monitoring in the background and lose the charge in progress. Exempting BattCap avoids this; it only uses the battery significantly while plugged in.</string>
+    <string name="battopt_text">Exempting BattCap lets it wait for a charge with no notification and keeps Android from stopping the measurement. It only uses the battery significantly while plugged in.</string>
     <string name="battopt_button">Exempt BattCap</string>
 
     <string name="version_label">Version %s</string>
@@ -95,4 +95,8 @@
     <string name="stats_count">Recorded charges</string>
     <string name="stats_average">Average (reliable measurements)</string>
     <string name="stats_health">Average health</string>
+    <string name="notif_channel_waiting">Waiting for a charge</string>
+    <string name="notif_channel_alerts">Alerts</string>
+    <string name="notif_waiting_min">Waiting for a charge. Exempt BattCap from battery optimization to hide this notification.</string>
+    <string name="notif_missed">A charge started but Android did not allow the measurement to start. Open BattCap to measure it.</string>
 </resources>

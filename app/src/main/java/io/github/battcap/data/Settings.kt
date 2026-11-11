@@ -3,10 +3,12 @@ package io.github.battcap.data
 import android.content.Context
 import io.github.battcap.battery.BatteryReader
 
-/** Capacité nominale : saisie manuelle prioritaire, sinon valeur détectée dans le power_profile. */
-class Settings(context: Context) {
+/** Préférences de l'app. Capacité nominale : saisie manuelle prioritaire, sinon valeur détectée. */
+class Settings(private val context: Context) {
     private val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
-    val detectedDesignMah: Double? = BatteryReader.designCapacityMah(context)
+
+    /** Lecture par réflexion du power_profile : faite une seule fois, à la demande. */
+    val detectedDesignMah: Double? by lazy { BatteryReader.designCapacityMah(context) }
 
     var manualDesignMah: Double?
         get() = prefs.getFloat(KEY_MANUAL, -1f).takeIf { it > 0 }?.toDouble()
@@ -16,5 +18,13 @@ class Settings(context: Context) {
 
     val designMah: Double? get() = manualDesignMah ?: detectedDesignMah
 
-    private companion object { const val KEY_MANUAL = "manual_design_mah" }
+    /** Le suivi est activé par l'utilisateur (indépendamment du fait qu'un service tourne). */
+    var monitoringEnabled: Boolean
+        get() = prefs.getBoolean(KEY_MONITORING, false)
+        set(value) = prefs.edit().putBoolean(KEY_MONITORING, value).apply()
+
+    private companion object {
+        const val KEY_MANUAL = "manual_design_mah"
+        const val KEY_MONITORING = "monitoring_enabled"
+    }
 }

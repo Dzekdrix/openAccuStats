@@ -7,7 +7,7 @@
     <string name="action_stop">Arrêter</string>
 
     <string name="live_title">Batterie en direct</string>
-    <string name="live_no_data">Lancez le suivi pour voir les mesures en direct.</string>
+    <string name="live_no_data">Lecture de la batterie…</string>
     <string name="status_charging">En charge</string>
     <string name="status_not_charging">Pas en charge</string>
     <string name="live_level">Niveau</string>
@@ -59,7 +59,7 @@
     <string name="outcome_too_short">Dernière charge non enregistrée : seulement %1$d %% mesurés (minimum %2$d %%).</string>
     <string name="outcome_none">Dernière charge non enregistrée : aucun changement de niveau n\'a pu être mesuré.</string>
     <string name="battopt_title">Optimisation de batterie active</string>
-    <string name="battopt_text">Android peut arrêter le suivi en arrière-plan et perdre la charge en cours. Exempter BattCap évite ce problème ; l\'app ne consomme vraiment que lorsque le téléphone est branché.</string>
+    <string name="battopt_text">Exempter BattCap lui permet d\'attendre une charge sans aucune notification et évite qu\'Android interrompe la mesure. L\'app ne consomme vraiment que lorsque le téléphone est branché.</string>
     <string name="battopt_button">Exempter BattCap</string>
 
     <string name="version_label">Version %s</string>
@@ -93,4 +93,8 @@
     <string name="stats_count">Charges enregistrées</string>
     <string name="stats_average">Moyenne (mesures fiables)</string>
     <string name="stats_health">Santé moyenne</string>
+    <string name="notif_channel_waiting">Attente d\'une charge</string>
+    <string name="notif_channel_alerts">Alertes</string>
+    <string name="notif_waiting_min">En attente d\'une charge. Exemptez BattCap de l\'optimisation de batterie pour masquer cette notification.</string>
+    <string name="notif_missed">Une charge a commencé mais Android n\'a pas autorisé le lancement de la mesure. Ouvrez BattCap pour la mesurer.</string>
 </resources>

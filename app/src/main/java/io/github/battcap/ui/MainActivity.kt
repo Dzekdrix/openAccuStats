@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import io.github.battcap.service.ChargeRepository
+import io.github.battcap.service.MonitoringController
 import io.github.battcap.ui.theme.BattCapTheme
 
 class MainActivity : ComponentActivity() {
@@ -22,6 +23,8 @@ class MainActivity : ComponentActivity() {
     override fun onStart() {
         super.onStart()
         ChargeRepository.setUiVisible(true)
+        // App au premier plan : on peut (re)mettre en place le suivi en toute sécurité
+        MonitoringController.ensure(this)
     }
 
     override fun onStop() {
