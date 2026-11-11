@@ -8,6 +8,8 @@ Ajoutez vos changements sous **[Unreleased]** au fil du développement ;
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-11-11
+
 - Démarrage au branchement fiabilisé : vérification périodique de secours (15 min),
   remise en place du suivi après un redémarrage ou une mise à jour de l'app.
 - Nouveau : diagnostic du suivi dans les Paramètres (état des tâches, exemption,

@@ -1,0 +1,1 @@
+More reliable start on plug-in: backup check every 15 min, restart after a reboot or an update. Monitoring diagnostics in Settings, with a copyable log.

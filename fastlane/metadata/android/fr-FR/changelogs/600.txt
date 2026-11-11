@@ -1,0 +1,1 @@
+Démarrage au branchement fiabilisé : vérification de secours toutes les 15 min, relance après un redémarrage ou une mise à jour. Diagnostic du suivi dans les Paramètres, avec journal copiable.
