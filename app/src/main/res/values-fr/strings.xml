@@ -102,9 +102,8 @@
     <string name="history_partial_tag">Partielle</string>
     <string name="history_partial_note">Non comptée dans la moyenne (moins de %d %%)</string>
     <string name="history_capacity_label">Capacité totale estimée :</string>
-    <string name="history_energy_label">Énergie stockée :</string>
-    <string name="history_energy_unavailable">non disponible</string>
     <string name="history_period_same_day">%1$s, %2$s - %3$s</string>
     <string name="history_period">%1$s - %2$s</string>
     <string name="history_ended_at">Terminée le %s</string>
+    <string name="history_charge_label">Charge stockée :</string>
 </resources>

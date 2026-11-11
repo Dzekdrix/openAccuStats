@@ -104,9 +104,8 @@
     <string name="history_partial_tag">Partial</string>
     <string name="history_partial_note">Not counted in the average (less than %d %%)</string>
     <string name="history_capacity_label">Estimated total capacity:</string>
-    <string name="history_energy_label">Energy stored:</string>
-    <string name="history_energy_unavailable">not available</string>
     <string name="history_period_same_day">%1$s, %2$s - %3$s</string>
     <string name="history_period">%1$s - %2$s</string>
     <string name="history_ended_at">Ended %s</string>
+    <string name="history_charge_label">Charge stored:</string>
 </resources>

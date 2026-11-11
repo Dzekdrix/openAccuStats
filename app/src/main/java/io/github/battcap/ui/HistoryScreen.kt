@@ -37,7 +37,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.battcap.R
 import io.github.battcap.battery.CapacityAverage
 import io.github.battcap.data.ChargeRecord
-import io.github.battcap.data.energyInWh
+import io.github.battcap.data.chargeInMah
 import io.github.battcap.data.isPartial
 
 private const val RECENT_COUNT = 10
@@ -133,11 +133,10 @@ private fun RecordContent(r: ChargeRecord, partial: Boolean, onDelete: () -> Uni
                 color = secondary,
                 strong = !partial
             )
-            // Énergie réellement stockée pendant CETTE charge
+            // Charge électrique réellement entrée pendant CE cycle de charge
             LabeledValue(
-                label = stringResource(R.string.history_energy_label),
-                value = r.energyInWh?.let { stringResource(R.string.unit_wh, it) }
-                    ?: stringResource(R.string.history_energy_unavailable),
+                label = stringResource(R.string.history_charge_label),
+                value = stringResource(R.string.unit_mah, r.chargeInMah),
                 color = secondary,
                 strong = false
             )

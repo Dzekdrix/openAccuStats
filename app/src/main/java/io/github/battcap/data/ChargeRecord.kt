@@ -41,10 +41,11 @@ data class ChargeRecord(
 val ChargeRecord.deltaSocPct get() = endLevel - startLevel
 
 /**
- * Énergie réellement stockée pendant la charge (Wh), null si le courant n'était pas mesuré.
- * energyWh est l'énergie totale extrapolée à 100 % : on la ramène à la variation de niveau mesurée.
+ * Charge électrique réellement entrée pendant ce cycle de charge (mAh).
+ * bestMah est la capacité totale extrapolée à 100 % : on la ramène à la variation de niveau
+ * mesurée, ce qui redonne exactement la charge mesurée (bestMah = charge entrée ÷ Δniveau).
  */
-val ChargeRecord.energyInWh get() = energyWh?.let { it * deltaSocPct / 100.0 }
+val ChargeRecord.chargeInMah get() = bestMah * deltaSocPct / 100.0
 
 /** Charge trop courte pour entrer dans la moyenne (affichée différemment). */
 val ChargeRecord.isPartial get() = CapacityAverage.isPartial(deltaSocPct)
